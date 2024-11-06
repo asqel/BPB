@@ -1,9 +1,9 @@
 
-#define SERIAL_PORT 0x3f8
+#include "kernel.h"
 
 void serial_putc(char c) {
-    while (!(port_byte_in(SERIAL_PORT + 5) & 0x20));
-    port_byte_out(0x3f8, c);
+    while (!(port_read_u8(SERIAL_PORT + 5) & 0x20));
+    port_write_u8(0x3f8, c);
 }
 void serial_putstr(char *s) {
     while (*s)
@@ -33,11 +33,11 @@ void serial_putnbr(int n) {
 }
 
 void serial_init() {
-    port_byte_out(SERIAL_PORT + 1, 0x00);
-    port_byte_out(SERIAL_PORT + 3, 0x80); 
-    port_byte_out(SERIAL_PORT + 0, 0x03);
-    port_byte_out(SERIAL_PORT + 1, 0x00); 
-    port_byte_out(SERIAL_PORT + 3, 0x03);
-    port_byte_out(SERIAL_PORT + 2, 0xC7);
-    port_byte_out(SERIAL_PORT + 4, 0x0B);
+    port_write_u8(SERIAL_PORT + 1, 0x00);
+    port_write_u8(SERIAL_PORT + 3, 0x80); 
+    port_write_u8(SERIAL_PORT + 0, 0x03);
+    port_write_u8(SERIAL_PORT + 1, 0x00); 
+    port_write_u8(SERIAL_PORT + 3, 0x03);
+    port_write_u8(SERIAL_PORT + 2, 0xC7);
+    port_write_u8(SERIAL_PORT + 4, 0x0B);
 }
