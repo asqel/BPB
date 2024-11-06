@@ -16,14 +16,6 @@ static int putnbr_u32(u32 n, FILE *fd) {
     return res + 1;
 }
 
-static int putnbr_u16(u16 n, FILE *fd) {
-    return putnbr_u32((u32)n, fd);
-}
-
-static int putnbr_u8(u8 n, FILE *fd) {
-    return putnbr_u32((u32)n, fd);
-}
-
 static int putnbr_i32(i32 n, FILE *fd) {
     if (n >= 0) 
         return putnbr_u32((u32) n, fd);
@@ -38,35 +30,6 @@ static int putnbr_i32(i32 n, FILE *fd) {
     }
 
 }
-
-static int putnbr_i16(i16 n, FILE *fd) {
-    if (n >= 0) 
-        return putnbr_u16((u16) n, fd);
-    if (n == -32768) {
-        fwrite("-32768", 1, 6, fd);
-        return 6;
-    }
-    else  {
-        fputc('-', fd);
-        int v = putnbr_u16((u16)-n, fd);
-        return v + 1;
-    }
-}
-
-static int putnbr_i8(i16 n, FILE *fd) {
-    if (n >= 0) 
-        return putnbr_u8((u8) n, fd);
-    if (n == 128) {
-        fwrite("-128", 1, 4, fd);
-        return 4;
-    }
-    else  {
-        fputc('-', fd);
-        int v = putnbr_u8((u8)-n, fd);
-        return v + 1;
-    }
-}
-
 
 /* support:
   + / space

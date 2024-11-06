@@ -68,4 +68,21 @@ void *realloc(void *ptr, size_t size) {
     free(ptr);
     return ptr2;
 }
-   
+
+void *calloc(size_t nmemb, size_t size) {
+    void *ptr = malloc(nmemb * size);
+    if (!ptr)
+        return NULL;
+    for (size_t i = 0; i < nmemb * size; i++)
+        ((u8 *)ptr)[i] = 0;
+    return ptr;
+}
+
+char *strdup(const char *s) {
+    size_t len = strlen(s);
+    char *ptr = malloc(len + 1);
+    if (!ptr)
+        return NULL;
+    memcpy(ptr, s, len + 1);
+    return ptr;
+}

@@ -36,5 +36,7 @@ void port_write_u8(u16 port, u8 val);
 u16 port_read_u16(u16 port);
 void port_write_u16(u16 port, u16 val);
 void screen_erase();
+void close_os();
+int python_style_input(char *buffer, int max);
 
 #endif

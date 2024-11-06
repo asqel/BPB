@@ -112,10 +112,13 @@ extern int blt_formats_len;
 extern oe_format_t *custom_formats;
 extern int custom_formats_len;
 
-int oe_fprintf(FILE *fd, char *format, ...);
+int fprintf(FILE *fd, char *format, ...);
+int vfprintf(FILE *fd, char *format, va_list args);
 
 void *malloc(size_t size);
 void *realloc(void *ptr, size_t size);
 void free(void *ptr);
+void *calloc(size_t nmemb, size_t size);
+char *strdup(const char *s);
 
 #endif

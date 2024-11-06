@@ -51,7 +51,7 @@ void close_os() {
 }
 
 int python_style_input(char *buffer, int max) {
-    unsigned char c, old;
+    unsigned char c, old = 0;
     int current = 0;
     buffer[0] = 0;
 

@@ -115,10 +115,17 @@ static oe_format_flag parse_flag_fm(char **format) {
     return flag;
 }
 
-int oe_fprintf(FILE *fd, char *format, ...) {
-    int res = 0;
+int fprintf(FILE *fd, char *format, ...) {
     va_list args;
     va_start(args, format);
+    int res = vfprintf(fd, format, args);
+    va_end(args);
+    return res;
+}
+
+int vfprintf(FILE *fd, char *format, va_list args) {
+    int res = 0;
+
     while (*format) {
         if (*format != '%') {
             fputc(*format, fd);

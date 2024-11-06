@@ -1,4 +1,4 @@
-C_SOURCES = $(wildcard kernel/*.c libft/*.c kernel/*.asm, oeuf/*.c)
+C_SOURCES = $(wildcard kernel/*.c libft/*.c kernel/*.asm oeuf/*.c)
 
 # Nice syntax for file extension replacement
 OBJS = ${C_SOURCES:.c=.o} 
@@ -9,11 +9,10 @@ CC = gcc -m32
 LD = ld -m elf_i386
 GDB = /usr/local/i386elfgcc/bin/i386-elf-gdb
 
-CFLAGS = -ffreestanding -Wall -Wextra -fno-exceptions -m32 -fno-stack-protector -fno-pie -I./include -nostdlib -nostdinc
+CFLAGS = -ffreestanding -Wall -Wextra -fno-exceptions -m32 -fno-stack-protector -fno-pie -I./include -nostdlib -nostdinc -Os
 
 # '--oformat binary' deletes all symbols as a collateral, so we don't need
 # to 'strip' them manually on this case
-
 os-image.bin: kernel.bin
 	nasm -f bin boot/boot_loader.asm -o os-image.bin
 
