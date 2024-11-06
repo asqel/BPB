@@ -1,5 +1,5 @@
 
-#include "kernel.h"
+#include <kernel.h>
 
 void serial_putc(char c) {
     while (!(port_read_u8(SERIAL_PORT + 5) & 0x20));

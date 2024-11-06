@@ -1,5 +1,6 @@
 
 #include "kernel.h"
+#include "libft.h"
 
 int seed = 0;
 
@@ -40,24 +41,6 @@ char keyboard_map[] = {
 	'-', '4', '5', '6', '+', '1', '2', '3', '0', '.'
 };
 
-#define PS2_DATA_PORT 0x60
-#define PS2_STATUS_PORT 0x64
-#define PS2_COMMAND_PORT 0x64
-
-void ps2_init() {
-    port_write_u8(PS2_COMMAND_PORT, 0xAD); // Désactiver le port PS/2 1
-    port_write_u8(PS2_COMMAND_PORT, 0xA7); // Désactiver le port PS/2 2 (si présent)
-
-    // Vider le tampon
-    while (port_read_u8(PS2_STATUS_PORT) & 1) {
-        port_read_u8(PS2_DATA_PORT);
-    }
-
-    // Activer les périphériques
-    port_write_u8(PS2_COMMAND_PORT, 0xAE); // Activer le port PS/2 1
-    port_write_u8(PS2_COMMAND_PORT, 0xA8); // Activer le port PS/2 2 (si présent)
-}
-
 void close_os() {
     port_write_u16(0x604, 0x2000);   // qemu
     port_write_u16(0xB004, 0x2000);  // bochs
@@ -73,6 +56,7 @@ int python_style_input(char *buffer, int max) {
     buffer[0] = 0;
 
     screen_puts(">>> ");
+    while (port_read_u8(0x60) == 0x1c);
 
     while (1) {
         c = port_read_u8(0x60);
@@ -84,7 +68,7 @@ int python_style_input(char *buffer, int max) {
             close_os();
 
         if (c == 0x1c) {
-            while (port_read_u8(0x60) == 0x1c);
+            screen_add_char('\n', 0x0f);
             return current;
         }
 
@@ -107,16 +91,29 @@ int python_style_input(char *buffer, int max) {
     }
 }
 
+void interpret(char *buffer) {
+    if (!*buffer) {
+        return;
+    }
+    if (strcmp(buffer, "exit") == 0) {
+        close_os();
+    } else if (strcmp(buffer, "clear") == 0) {
+        screen_clear();
+    } else {
+        screen_puts("Invalid command: ");
+        screen_puts(buffer);
+        screen_puts("\n");
+    }
+}
+
 void kernel_main(void) {
     serial_init();
-    ps2_init();
+    screen_clear();
 
     char buffer[256];
 
     while(1) {
         python_style_input(buffer, 256);
-        screen_puts("\noui: ");
-        screen_puts(buffer);
-        screen_puts("\n");
+        interpret(buffer);
     }
 }

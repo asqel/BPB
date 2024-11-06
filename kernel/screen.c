@@ -1,6 +1,6 @@
 
 
-#include "kernel.h"
+#include <kernel.h>
 
 #define SCR_ADDR ((unsigned char *)0xb8000)
 
@@ -87,4 +87,15 @@ void screen_erase() {
 	SCR_AT(x, y) = 0;
 	*(1 + &SCR_AT(x, y)) = 0;
 	screen_set_cursor();
+}
+
+void screen_clear() {
+	x = 0;
+	y = 0;
+	for (int i = 0; i < WIDTH; i++) {
+		for (int k = 0; k < HEIGHT; k++) {
+			SCR_AT(i, k) = 0;
+			*(1 + &SCR_AT(i, k)) = 0;
+		}
+	}
 }
