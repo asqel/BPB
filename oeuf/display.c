@@ -123,6 +123,14 @@ int fprintf(FILE *fd, char *format, ...) {
     return res;
 }
 
+int printf(char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    int res = vfprintf(stdout, format, args);
+    va_end(args);
+    return res;
+}
+
 int vfprintf(FILE *fd, char *format, va_list args) {
     int res = 0;
 
