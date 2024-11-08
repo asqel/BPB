@@ -60,11 +60,19 @@ static int put_format_N(FILE *, va_list *, oe_format_arg) {
     return 0;
 }
 
+static int put_format_s(FILE *fd, va_list *args, oe_format_arg) {
+    char *ptr = va_arg(*args, char *);
+    int len = strlen(ptr);
+    fwrite(ptr, 1, len, fd);
+    return 0;
+}
+
 oe_format_t blt_formats[] = {
     (oe_format_t){.func = &put_format_d, .specifier = "d"},
     (oe_format_t){.func = &put_format_n, .specifier = "n"},
     (oe_format_t){.func = &put_format_N, .specifier = "N"},
     (oe_format_t){.func = &put_format_N, .specifier = "M"},
+    (oe_format_t){.func = &put_format_s, .specifier = "s"},
 };
 
-int blt_formats_len = 3;
+int blt_formats_len = sizeof(blt_formats)/sizeof(blt_formats[0]);
