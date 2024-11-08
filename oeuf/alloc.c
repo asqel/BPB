@@ -41,12 +41,16 @@ void *malloc(size_t size) {
 			return &heap[i];
 		}
 	}
+    puts("malloc: out of memory");
 	return NULL;
 }
 
 void free(void *ptr) {
-	u8 *ptr2 = (u8 *)ptr;
-	if ((ptr2 < heap || ptr2 >= heap + HEAP_SIZE) || !is_start(ptr2)) {
+    u8 *ptr2 = (u8 *)ptr;
+    if (ptr == NULL)
+        return ;
+    if ((ptr2 < heap || ptr2 >= heap + HEAP_SIZE) || !is_start(ptr2)) {
+        puts("free: invalid pointer");
 		return ;
 	}
 	int i = 0;
