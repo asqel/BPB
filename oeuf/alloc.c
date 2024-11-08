@@ -53,6 +53,24 @@ void free(void *ptr) {
 	}
 }
 
+size_t get_alloc_size(void *ptr) {
+	u8 *ptr2 = (u8 *)ptr;
+	size_t len = 0;
+
+	if ((ptr2 < heap || ptr2 >= heap + HEAP_SIZE) || !is_start(ptr2))
+		return 0;
+	len++;
+	while (is_occupied(ptr2 + len))
+		len++;
+	return len;
+	
+}
+
+size_t inline static min(size_t a, size_t b) {
+	if (a < b)
+		return a;
+	return b;
+} 
 
 void *realloc(void *ptr, size_t size) {
     if (size == 0) {
@@ -64,7 +82,7 @@ void *realloc(void *ptr, size_t size) {
     u8 *ptr2 = malloc(size);
     if (!ptr2)
         return NULL;
-    memcpy(ptr2, ptr, size);
+    memcpy(ptr2, ptr, min(size, get_alloc_size(ptr)));
     free(ptr);
     return ptr2;
 }
