@@ -14,8 +14,9 @@
 #include <libft.h>
 #include <oeuf.h>
 
-#define OLV_VERSION "1.2 rev 3"
+#define OLV_VERSION "1.2 rev 4"
 
+#define BPBBUILD      1  // enable bpb features
 #define PROFANBUILD   0  // enable profan features
 #define UNIXBUILD     0  // enable unix features
 
@@ -1598,6 +1599,7 @@ char *if_debug(char **input) {
         fputs("END\n", file);
     }
 
+    // fclose(file);
     puts("Functions saved to 'funcs.olv' use 'olivine -p funcs.olv' to display them");
 
     return NULL;
@@ -1952,7 +1954,7 @@ char *if_export(char **input) {
 }
 
 char *if_fsize(char **input) {
-    (void) input;
+    UNUSED(input);
     /*
     int file_size = 0;
 
@@ -2312,7 +2314,7 @@ char *if_set_var(char **input) {
     // get value from stdin
     if (argc == 1) {
         value = malloc(INPUT_SIZE + 1);
-        python_style_input(value, INPUT_SIZE);
+        python_style_input(value, INPUT_SIZE, NULL, 0);
         value[strlen(value) - 1] = '\0';
     }
 
@@ -2452,12 +2454,14 @@ char *if_ticks(char **input) {
 }
 
 char *if_clear(char **input) {
-    (void) input;
+    UNUSED(input);
     screen_clear();
     return NULL;
 }
 
 char *if_alloc(char **input) {
+    UNUSED(input);
+
     size_t allocs = get_alloc_count();
     int len = 0;
     if (allocs == 0)
@@ -2998,6 +3002,7 @@ char *execute_line(char *full_line) {
     if (line != full_line)
         free(line);
     free(function_name);
+
     return result;
 }
 
@@ -4057,7 +4062,7 @@ void olv_print(char *str, int len) {
  *                 *
 ********************/
 
-#if PROFANBUILD
+#if PROFANBUILD || BPBBUILD
 
 void display_prompt(void) {
     for (int i = 0; g_prompt[i] != '\0'; i++) {
@@ -4094,7 +4099,9 @@ void display_prompt(void) {
         }
         i++;
     }
+    #if PROFANBUILD
     fflush(stdout);
+    #endif
 }
 
 #else
@@ -4644,21 +4651,39 @@ int profan_local_input(char *buffer, int size, char **history, int history_end, 
 
 #elif USE_READLINE
 
-int unix_local_input(char *buffer, int size, char **history, int history_end, char *prompt) {
+int unix_local_input(char *buffer, int size, char *prompt) {
+    static char *last_line = NULL;
+
     char *line = readline(prompt);
     if (line == NULL) {
         return -2;
     }
 
-    if (line[0] && (history[history_end] == NULL || strcmp(line, history[history_end]))) {
+    if (line[0] != '\0' && (last_line == NULL || strcmp(line, last_line))) {
         add_history(line);
     }
 
+    free(last_line);
+    last_line = line;
+
     strncpy(buffer, line, size);
-    free(line);
 
     return -1;
 }
+
+
+/*********************
+ *                  *
+ *    BPB  input    *
+ *                  *
+*********************/
+
+#elif BPBBUILD
+
+int bpb_local_input(char *buffer, int size, char **history, int history_end) {
+    python_style_input(buffer, size, history, history_end);
+    return -1;
+}   
 
 /*********************
  *                  *
@@ -4668,15 +4693,14 @@ int unix_local_input(char *buffer, int size, char **history, int history_end, ch
 
 #else
 
-int unix_local_input(char *buffer, int size, char **history, int history_end, char *prompt) {
-    UNUSED(history_end);
-    UNUSED(history);
-
+int unix_local_input(char *buffer, int size, char *prompt) {
     fputs(prompt, stdout);
+    fflush(stdout);
 
-    python_style_input(buffer, size);
-
-    return -1;
+    if (fgets(buffer, size, stdin))
+        return -1;
+    puts("");
+    return -2;
 }
 
 #endif
@@ -4692,8 +4716,11 @@ void start_shell(void) {
     // use execute_program() to create a shell
     char *line = malloc(INPUT_SIZE + 1);
 
+    #if PROFANBUILD || BPBBUILD
     char **history = calloc(HISTORY_SIZE, sizeof(char *));
     int history_index = 0;
+    #endif
+
     int cursor_pos, len;
     cursor_pos = -1;
 
@@ -4703,8 +4730,11 @@ void start_shell(void) {
             #if PROFANBUILD
             display_prompt();
             cursor_pos = profan_local_input(line, INPUT_SIZE, history, history_index, cursor_pos);
+            #elif BPBBUILD
+            display_prompt();
+            cursor_pos = bpb_local_input(line, INPUT_SIZE, history, history_index);
             #else
-            cursor_pos = unix_local_input(line, INPUT_SIZE, history, history_index, render_prompt(line, INPUT_SIZE));
+            cursor_pos = unix_local_input(line, INPUT_SIZE, render_prompt(line, INPUT_SIZE));
             #endif
         } while (cursor_pos >= 0);
 
@@ -4718,8 +4748,11 @@ void start_shell(void) {
                 fputs(OTHER_PROMPT, stdout);
                 fflush(stdout);
                 cursor_pos = profan_local_input(line + len, INPUT_SIZE - len, history, history_index, cursor_pos);
+                #elif BPBBUILD
+                fputs(OTHER_PROMPT, stdout);
+                cursor_pos = bpb_local_input(line + len, INPUT_SIZE - len, history, history_index);
                 #else
-                cursor_pos = unix_local_input(line + len, INPUT_SIZE - len, history, history_index, OTHER_PROMPT);
+                cursor_pos = unix_local_input(line + len, INPUT_SIZE - len, OTHER_PROMPT);
                 #endif
             } while(cursor_pos >= 0);
         }
@@ -4728,7 +4761,8 @@ void start_shell(void) {
             puts("Exiting olivine shell, bye!");
             break;
         }
-
+        
+        #if PROFANBUILD || BPBBUILD
         // add to history if not empty and not the same as the last command
         if (line[0] && (history[history_index] == NULL || strcmp(line, history[history_index]))) {
             history_index = (history_index + 1) % HISTORY_SIZE;
@@ -4739,27 +4773,30 @@ void start_shell(void) {
 
             history[history_index] = strdup(line);
         }
+        #endif
 
         execute_program(line);
     }
 
+    #if PROFANBUILD || BPBBUILD
     for (int i = 0; i < HISTORY_SIZE; i++) {
         if (history[i] != NULL) {
             free(history[i]);
         }
     }
+    free(history);
+    #endif
 
     #if USE_READLINE
     rl_clear_history();
     #endif
 
-    free(history);
     free(line);
 }
 
 int execute_file(char *file, char **args) {
-    (void) args;
-    (void) file;
+    UNUSED(file);
+    UNUSED(args);
     /*
     FILE *f = fopen(file, "r");
     if (f == NULL) {
@@ -4812,7 +4849,7 @@ int execute_file(char *file, char **args) {
     free(program);
 
     */
-    return 1;
+    return 0;
 }
 
 /*
