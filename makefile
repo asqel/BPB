@@ -12,7 +12,7 @@ CC = gcc -m32
 LD = ld -m elf_i386
 GDB = /usr/local/i386elfgcc/bin/i386-elf-gdb
 
-CFLAGS = -ffreestanding -Wall -Wextra -fno-exceptions -m32 -fno-stack-protector -fno-pie -I./include -nostdlib -nostdinc -Os
+CFLAGS = -ffreestanding -Wall -Wextra -fno-exceptions -m32 -fno-stack-protector -fno-pie -I./include -nostdlib -nostdinc
 
 # '--oformat binary' deletes all symbols as a collateral, so we don't need
 # to 'strip' them manually on this case
