@@ -64,7 +64,7 @@ static int put_format_s(FILE *fd, va_list *args, oe_format_arg) {
     char *ptr = va_arg(*args, char *);
     int len = strlen(ptr);
     fwrite(ptr, 1, len, fd);
-    return 0;
+    return len;
 }
 
 oe_format_t blt_formats[] = {

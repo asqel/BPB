@@ -10,6 +10,30 @@ void serial_putstr(char *s) {
 }
 // int seed = 0;
 
+
+void serial_putnbr(int n) {
+    if (n ==  (int)0x80000000) {
+        serial_putstr("-2147483648");
+        return ;
+    }
+    if (n < 0) {
+        serial_putc('-');
+        serial_putnbr(-n);
+        return ;
+    }
+    if (n == 0) {
+        serial_putc('0');
+        return;
+    }
+    if (n < 10) {
+        serial_putc('0' + n);
+        return;
+    }
+    serial_putnbr(n / 10);
+    serial_putnbr(n % 10);
+}
+
+
 void screen_puts(char *string) {
     for (int i = 0; string[i] != 0; i++) {
         screen_add_char(string[i], 0x0f);

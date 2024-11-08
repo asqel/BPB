@@ -2308,6 +2308,28 @@ char *if_clear(char **input) {
     return NULL;
 }
 
+char *if_alloc(char **input) {
+    size_t allocs = get_alloc_count();
+    int len = 0;
+    if (allocs == 0)
+        return strdup("0");
+    while (allocs > 0) {
+        allocs /= 10;
+        len++;
+    }
+
+    size_t num = get_alloc_count();
+    char *res = malloc(sizeof(char) * (1 + len));
+    res[len] = '\0';
+    int i = 0;
+    while (num > 0) {
+        res[len - 1 - i] = (num % 10) + '0';
+        i++;
+        num /= 10;
+    }
+    return res;
+}
+
 internal_function_t internal_functions[] = {
     {".", if_dot},
     {"cd", if_cd},
@@ -2331,6 +2353,7 @@ internal_function_t internal_functions[] = {
     {"strlen", if_strlen},
     {"ticks", if_ticks},
     {"clear", if_clear},
+    {"alloc", if_alloc},
     {NULL, NULL}
 };
 
@@ -2835,7 +2858,6 @@ char *execute_line(char *full_line) {
     if (line != full_line)
         free(line);
     free(function_name);
-
     return result;
 }
 

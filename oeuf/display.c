@@ -74,14 +74,19 @@ static int do_format(FILE *fd, char *format, va_list *args, oe_format_arg fm_arg
     *fm_len = end;
     //find blt format
     for(int i = 0; i < blt_formats_len; i++) {
-        if (!strcmp(to_search, blt_formats[i].specifier))
+        if (!strcmp(to_search, blt_formats[i].specifier)) {
+            free(to_search);
             return blt_formats[i].func(fd, args, fm_arg);
+        }
     }
 
     for(int i = 0; i < custom_formats_len; i++) {
-        if (!strcmp(to_search, custom_formats[i].specifier))
+        if (!strcmp(to_search, custom_formats[i].specifier)) {
+            free(to_search);
             return custom_formats[i].func(fd, args, fm_arg);
+        }
     }
+    free(to_search);
     return 0;
 }
 

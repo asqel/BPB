@@ -3,6 +3,8 @@
 
 #define HEAP_SIZE 0x10000
 
+size_t alloc_count = 0;
+
 u8 *heap_info = (u8 *)0x100000 + HEAP_SIZE; //1 == ocupied ; 2 == start of block (2bit each)
 u8 *heap = (u8 *)0x100000;
 
@@ -35,6 +37,7 @@ void *malloc(size_t size) {
 			for (size_t k = 1; k < size; k++) {
 				set_start(&heap[i + k]);
 			}
+			alloc_count++;
 			return &heap[i];
 		}
 	}
@@ -51,6 +54,7 @@ void free(void *ptr) {
 		clear_info(ptr2 + i);
 		i++;
 	}
+	alloc_count--;
 }
 
 size_t get_alloc_size(void *ptr) {
@@ -103,4 +107,8 @@ char *strdup(const char *s) {
         return NULL;
     memcpy(ptr, s, len + 1);
     return ptr;
+}
+
+size_t get_alloc_count() {
+	return alloc_count;
 }
