@@ -1,7 +1,14 @@
 
 #include <kernel.h>
 
+int ata_read_sector(unsigned int lba, unsigned short int* buffer);
 
+void loader_main(u32 kernel_size, u32 kernel_start) {
+    for (u32 i = 0; i < kernel_size; i++) {
+        ata_read_sector(kernel_start + i, (u16 *)(0x10000 + i * 512));
+    }
+    (*(void (*)())(0x10000))();
+}
 // Définitions des ports ATA (pour le canal primaire)
 #define ATA_PRIMARY_IO_BASE      0x1F0
 #define ATA_PRIMARY_CONTROL_BASE 0x3F6
@@ -68,14 +75,4 @@ int ata_read_sector(unsigned int lba, unsigned short int* buffer) {
         return 0; // Erreur pendant la lecture
     }
     return 1;
-}
-
-
-
-
-void loader_main(u32 kernel_size, u32 kernel_start) {
-    for (int i = 0; i < kernel_size; i++) {
-        ata_read_sector(kernel_start + i, (u16 *)(0x10000 + i * 512));
-    }
-    (*(void (*)())(0x10000))();
 }
