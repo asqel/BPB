@@ -112,6 +112,7 @@ extern int blt_formats_len;
 extern oe_format_t *custom_formats;
 extern int custom_formats_len;
 
+int printf(char *format, ...);
 int fprintf(FILE *fd, char *format, ...);
 int vfprintf(FILE *fd, char *format, va_list args);
 
