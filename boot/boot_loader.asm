@@ -1,11 +1,12 @@
 [org 0x7c00]
-KERNEL_OFFSET equ 0x1000
+DISK_START:
+LOADER_OFFSET equ 0x1000
 
     mov [BOOT_DRIVE], dl
     mov bp, 0x9000
     mov sp, bp
 
-    call load_kernel
+    call load_loader
     call switch_to_32bit
 
 
@@ -28,16 +29,18 @@ disk_load:
 %include "boot/switch_to_32bit.asm"
 
 [bits 16]
-load_kernel:
-    mov bx, KERNEL_OFFSET
-    mov dh, KERNEL_SIZE
+load_loader:
+    mov bx, LOADER_OFFSET
+    mov dh, LOADER_SIZE
     mov cl, 0x02    ; sector of start (1 is bootsector)
     call disk_load
     ret
 
 [bits 32]
 BEGIN_PM:
-    jmp KERNEL_OFFSET ; that's so far
+    push dword (KERNEL_START - DISK_START) / 512
+    push dword (KERNEL_END - KERNEL_START + 511) / 512
+    jmp LOADER_OFFSET ; that's so far
     jmp $
 
 
@@ -47,8 +50,14 @@ BOOT_DRIVE db 0
 times 510 - ($-$$) db 0
 dw 0xaa55
 
+LOADER_START:
+incbin "loader.bin"
+LOADER_END:
+
+times 512 - ((LOADER_END - LOADER_START) % 512) db 0xAA
+
 KERNEL_START:
 incbin "kernel.bin"
 KERNEL_END:
 
-KERNEL_SIZE equ (KERNEL_END - KERNEL_START + 511) / 512
+LOADER_SIZE equ (LOADER_END - LOADER_START + 511) / 512
