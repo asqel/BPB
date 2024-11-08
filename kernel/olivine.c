@@ -2302,6 +2302,11 @@ char *if_ticks(char **input) {
     return output;
 }
 
+char *if_clear(char **input) {
+    (void) input;
+    screen_clear();
+    return NULL;
+}
 
 internal_function_t internal_functions[] = {
     {".", if_dot},
@@ -2325,6 +2330,7 @@ internal_function_t internal_functions[] = {
     {"sprintf", if_sprintf},
     {"strlen", if_strlen},
     {"ticks", if_ticks},
+    {"clear", if_clear},
     {NULL, NULL}
 };
 
@@ -4890,7 +4896,7 @@ char init_prog[] =
 "END";
 
 
-int main(int argc, char **argv) {
+int olivine_main(int argc, char **argv) {
     olivine_args_t *args = parse_args(argc, argv);
     int ret_val = 0;
 

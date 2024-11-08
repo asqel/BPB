@@ -66,7 +66,7 @@ size_t get_alloc_size(void *ptr) {
 	
 }
 
-size_t inline static min(size_t a, size_t b) {
+inline static size_t min(size_t a, size_t b) {
 	if (a < b)
 		return a;
 	return b;

@@ -2,7 +2,7 @@ LOADER_SRC = $(wildcard loader/*.c loader/*.asm)
 LOADER_OBJS = ${LOADER_SRC:.c=.o} 
 LOADER_OBJS := ${LOADER_OBJS:.asm=.o}
 
-KERNEL_SRC = $(wildcard kernel/*.c kernel/*.asm )
+KERNEL_SRC = $(wildcard kernel/*.c kernel/*.asm libft/*.c oeuf/*.c)
 KERNEL_OBJS = ${KERNEL_SRC:.c=.o} 
 KERNEL_OBJS := ${KERNEL_OBJS:.asm=.o}
 
