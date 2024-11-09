@@ -14,7 +14,7 @@ CFLAGS = -ffreestanding -Wall -Wextra -fno-exceptions -m32 -fno-stack-protector 
 
 # '--oformat binary' deletes all symbols as a collateral, so we don't need
 # to 'strip' them manually on this case
-BPB.bin: loader.bin kernel.bin
+BPB.bin: loader.bin kernel.bin disk.bin
 	nasm -f bin boot/boot_loader.asm -o BPB.bin
 
 %.o: %.c
@@ -41,12 +41,15 @@ kernel.bin: build/entry_local.o $(KERNEL_OBJS)
 kernel.elf: build/entry_grub.o $(KERNEL_OBJS)
 	$(LD) -o $@ -T build/kernel_grub.ld $^
 
-iso: kernel.elf
+BPB.iso: kernel.elf
 	mkdir -p isodir/boot/grub
 	cp kernel.elf isodir/boot/kernel.elf
 	cp build/grub.cfg isodir/boot/grub/grub.cfg
 	grub-mkrescue -o BPB.iso isodir
 	rm -rf isodir
+
+disk.bin:
+	make -C disk
 
 clean:
 	find . -name '*.o' -delete

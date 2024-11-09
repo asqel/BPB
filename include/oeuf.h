@@ -122,5 +122,6 @@ void free(void *ptr);
 void *calloc(size_t nmemb, size_t size);
 char *strdup(const char *s);
 size_t get_alloc_count();
+void heap_init();
 
 #endif

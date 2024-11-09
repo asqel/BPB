@@ -38,6 +38,10 @@ load_loader:
 
 [bits 32]
 BEGIN_PM:
+
+    push dword (REAL_DISK_START - DISK_START) / 512
+    push dword (REAL_DISK_END - REAL_DISK_START + 511) / 512
+
     push dword (KERNEL_START - DISK_START) / 512
     push dword (KERNEL_END - KERNEL_START + 511) / 512
     jmp LOADER_OFFSET ; that's so far
@@ -59,5 +63,12 @@ times 512 - ((LOADER_END - LOADER_START) % 512) db 0xAA
 KERNEL_START:
 incbin "kernel.bin"
 KERNEL_END:
+
+times 512 - ((KERNEL_END - KERNEL_START) % 512) db 0xAA
+
+REAL_DISK_START:
+incbin "disk.bin"
+REAL_DISK_END:
+
 
 LOADER_SIZE equ (LOADER_END - LOADER_START + 511) / 512
