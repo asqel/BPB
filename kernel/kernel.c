@@ -1,4 +1,5 @@
 #include <kernel.h>
+#include <oeuf.h>
 
 void close_os() {
     port_write_u16(0x604, 0x2000);   // qemu
@@ -12,10 +13,11 @@ void close_os() {
 int olivine_main(int argc, char **argv);
 int puts(const char *s);
 
-void kernel_main() {
+void kernel_main(u32 disk_size, u32 disk_start) {
     screen_clear();
     puts("it's a good idea to want to make an os that runs Windows exe and graphic driverslike to be able to run games (._.  )\n");
-	serial_init();
+    serial_init();
+    heap_init();
     olivine_main(1, (char *[]){"olivine"});
 	while (1);
 }

@@ -3,11 +3,11 @@
 
 int ata_read_sector(unsigned int lba, unsigned short int* buffer);
 
-void loader_main(u32 kernel_size, u32 kernel_start) {
+void loader_main(u32 kernel_size, u32 kernel_start, u32 disk_size, u32 disk_start) {
     for (u32 i = 0; i < kernel_size; i++) {
         ata_read_sector(kernel_start + i, (u16 *)(0x10000 + i * 512));
     }
-    (*(void (*)())(0x10000))();
+    (*(void (*)())(0x10000))(disk_size, disk_start);
 }
 // Définitions des ports ATA (pour le canal primaire)
 #define ATA_PRIMARY_IO_BASE      0x1F0

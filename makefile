@@ -16,7 +16,7 @@ CFLAGS = -ffreestanding -Wall -Wextra -fno-exceptions -m32 -fno-stack-protector 
 
 # '--oformat binary' deletes all symbols as a collateral, so we don't need
 # to 'strip' them manually on this case
-os-image.bin: loader.bin  kernel.bin
+os-image.bin: loader.bin  kernel.bin disk.bin
 	nasm -f bin boot/boot_loader.asm -o os-image.bin
 
 %.o: %.c
@@ -36,6 +36,9 @@ loader.bin: $(LOADER_OBJS)
 
 kernel.bin: $(KERNEL_OBJS)
 	$(LD) -o $@ -T kernel_linker.ld $^ --oformat binary
+
+disk.bin:
+	make -C disk
 
 clean:
 	rm -f */*.o
