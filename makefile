@@ -29,7 +29,7 @@ run: BPB.bin
 run_term: BPB.bin
 	qemu-system-i386 -drive format=raw,file=BPB.bin -nographic -curses
 
-run_grub: iso
+run_grub: BPB.iso
 	qemu-system-i386 -drive format=raw,file=BPB.iso
 
 loader.bin: $(LOADER_OBJS)
