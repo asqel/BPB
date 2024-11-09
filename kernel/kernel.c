@@ -11,11 +11,14 @@ void close_os() {
 
 int olivine_main(int argc, char **argv);
 int puts(const char *s);
+void heap_init(void);
 
 void kernel_main() {
     screen_clear();
     puts("it's a good idea to want to make an os that runs Windows exe and graphic driverslike to be able to run games (._.  )\n");
 	serial_init();
+    heap_init();
+
     olivine_main(1, (char *[]){"olivine"});
 	while (1);
 }

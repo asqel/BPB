@@ -1,10 +1,9 @@
 ENTRY(_start)
-SECTIONS
-{
+
+SECTIONS {
 	. = 0x10000;
 
 	.text : {
-		kernel/kernel_entry.o (.text) /* if not placed here it is not executed first*/
 		*(.text)
 	}
 
