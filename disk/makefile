@@ -1,2 +1,2 @@
 all:
-	echo "salut" > ../disk.bin
+	cat disk > ../disk.bin

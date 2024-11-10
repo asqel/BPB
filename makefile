@@ -30,7 +30,7 @@ run_term: BPB.bin
 	qemu-system-i386 -drive format=raw,file=BPB.bin -nographic -curses
 
 run_grub: BPB.iso
-	qemu-system-i386 -drive format=raw,file=BPB.iso
+	qemu-system-i386 -drive format=raw,file=BPB.iso -serial stdio
 
 loader.bin: $(LOADER_OBJS)
 	$(LD) -o $@ -T build/loader.ld $^ --oformat binary
@@ -41,9 +41,10 @@ kernel.bin: build/entry_local.o $(KERNEL_OBJS)
 kernel.elf: build/entry_grub.o $(KERNEL_OBJS)
 	$(LD) -o $@ -T build/kernel_grub.ld $^
 
-BPB.iso: kernel.elf
+BPB.iso: kernel.elf disk.bin
 	mkdir -p isodir/boot/grub
 	cp kernel.elf isodir/boot/kernel.elf
+	cp disk.bin isodir/disk.bin
 	cp build/grub.cfg isodir/boot/grub/grub.cfg
 	grub-mkrescue -o BPB.iso isodir
 	rm -rf isodir
