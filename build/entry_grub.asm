@@ -14,5 +14,6 @@ align 4
 section .text
 align 4
 _start:
+    push ebx
     cli
     call kernel_main

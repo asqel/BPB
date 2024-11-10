@@ -1,9 +1,9 @@
 LOADER_SRC = $(wildcard loader/*.c loader/*.asm)
-LOADER_OBJS = ${LOADER_SRC:.c=.o} 
+LOADER_OBJS = ${LOADER_SRC:.c=.o}
 LOADER_OBJS := ${LOADER_OBJS:.asm=.o}
 
 KERNEL_SRC = $(wildcard kernel/*.c libft/*.c oeuf/*.c)
-KERNEL_OBJS = ${KERNEL_SRC:.c=.o} 
+KERNEL_OBJS = ${KERNEL_SRC:.c=.o}
 KERNEL_OBJS := ${KERNEL_OBJS:.asm=.o}
 
 # Change this if your cross-compiler is somewhere else
@@ -30,7 +30,7 @@ run_term: BPB.bin
 	qemu-system-i386 -drive format=raw,file=BPB.bin -nographic -curses
 
 run_grub: BPB.iso
-	qemu-system-i386 -drive format=raw,file=BPB.iso
+	qemu-system-i386 -drive format=raw,file=BPB.iso -serial stdio
 
 loader.bin: $(LOADER_OBJS)
 	$(LD) -o $@ -T build/loader.ld $^ --oformat binary
