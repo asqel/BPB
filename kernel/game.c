@@ -1,14 +1,5 @@
 #include <kernel.h>
 
-
-#define SCR_ADDR ((unsigned char *)0xb8000)
-
-#define HEIGHT 25
-#define WIDTH 80
-
-#define SCR_AT(X, Y) (*(SCR_ADDR + 2 * ((X) + (Y) * WIDTH)))
-
-
 struct obj_t;
 struct chunk_t;
 struct player_t;

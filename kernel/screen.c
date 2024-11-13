@@ -2,12 +2,7 @@
 
 #include <kernel.h>
 
-#define SCR_ADDR ((unsigned char *)0xb8000)
 
-#define HEIGHT 25
-#define WIDTH 80
-
-#define SCR_AT(X, Y) (*(SCR_ADDR + 2 * ((X) + (Y) * WIDTH)))
 
 static int x = 0;
 static int y = 0;

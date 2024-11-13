@@ -2488,6 +2488,51 @@ char *if_game(char **) {
     return NULL;
 }
 
+char *if_pread(char **input) {
+    int argc;
+    for (argc = 0; input[argc] != NULL; argc++);
+
+    if (argc != 1) {
+        raise_error("port_read", "Usage: port_read <port>");
+        return ERROR_CODE;
+    }
+
+    int port;
+    if (local_atoi(input[0], &port)) {
+        raise_error("port_read", "Invalid port '%s'", input[0]);
+        return ERROR_CODE;
+    }
+
+    char *res = malloc(12);
+    local_itoa(port_read_u8(port), res);
+    return res;
+}
+
+char *if_pwrite(char **input) {
+    int argc;
+    for (argc = 0; input[argc] != NULL; argc++);
+
+    if (argc != 2) {
+        raise_error("port_write", "Usage: port_write <port> <value>");
+        return ERROR_CODE;
+    }
+
+    int port;
+    if (local_atoi(input[0], &port)) {
+        raise_error("port_write", "Invalid port '%s'", input[0]);
+        return ERROR_CODE;
+    }
+
+    int value;
+    if (local_atoi(input[1], &value)) {
+        raise_error("port_write", "Invalid value '%s'", input[1]);
+        return ERROR_CODE;
+    }
+
+    port_write_u8(port, value);
+    return NULL;
+}
+
 internal_function_t internal_functions[] = {
     {".", if_dot},
     {"cd", if_cd},
