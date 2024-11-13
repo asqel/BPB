@@ -14,8 +14,6 @@ void graphic_init(grub_info *info) {
 	screen_byte_pp = info->framebuffer_bpp / 8;
 }
 
-
-
 void draw_square(int x, int y, int col, int size) {
     u32 real_col = 0;
     if (col)
