@@ -2483,6 +2483,11 @@ char *if_alloc(char **input) {
     return res;
 }
 
+char *if_game(char **) {
+    game_main();
+    return NULL;
+}
+
 internal_function_t internal_functions[] = {
     {".", if_dot},
     {"cd", if_cd},
@@ -2507,6 +2512,7 @@ internal_function_t internal_functions[] = {
     {"ticks", if_ticks},
     {"clear", if_clear},
     {"alloc", if_alloc},
+    {"game", if_game},
     {NULL, NULL}
 };
 

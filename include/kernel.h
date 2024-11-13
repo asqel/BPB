@@ -17,6 +17,19 @@ typedef u32 oe_arch_uint;
 
 typedef unsigned int uint;
 
+// genre c'est standard
+typedef struct tm {
+    int    tm_sec;   // seconds [0,61]
+    int    tm_min;   // minutes [0,59]
+    int    tm_hour;  // hour [0,23]
+    int    tm_mday;  // day of month [1,31]
+    int    tm_mon;   // month of year [0,11]
+    int    tm_year;  // years since 1900
+    int    tm_wday;  // day of week [0,6] (Sunday = 0)
+    int    tm_yday;  // day of year [0,365]
+    int    tm_isdst; // daylight savings flag
+} tm_t;
+
 typedef struct {
 	int fd;
 } FILE;
@@ -28,6 +41,10 @@ void screen_clear();
 
 void serial_init();
 void screen_add_char(char c, char col);
+
+void timer_init(void);
+u32 timer_sleep(u32 ms);
+int time_get(tm_t *target);
 
 #define SERIAL_PORT 0x3f8
 

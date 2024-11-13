@@ -42,6 +42,10 @@ void kernel_main(grub_info *info) {
     puts("indeed it is\n");
 
     serial_init();
+    rtc_init();
+
+    timer_init();
+
     serial_putnbr(info->vbe_mode_info);
     heap_init();
    //graphic_init(info);
@@ -49,9 +53,6 @@ void kernel_main(grub_info *info) {
    //    draw_std_char('$', 0 , 10);
    //    draw_std_char('$', 10 , 0);
    //}
-
-    game_main();
-    while(1);
 
     olivine_main(1, (char *[]){"olivine"});
 	while (1);
