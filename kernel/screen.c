@@ -99,3 +99,4 @@ void screen_clear() {
 		}
 	}
 }
+

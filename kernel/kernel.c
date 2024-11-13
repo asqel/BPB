@@ -33,6 +33,8 @@ void draw_glyph_at(u32 *glyphe, int size, int x, int y);
 void graphic_init(grub_info *);
 void draw_std_char(char c, int x, int y);
 
+void game_main();
+
 void kernel_main(grub_info *info) {
 
     screen_clear();
@@ -42,13 +44,17 @@ void kernel_main(grub_info *info) {
     serial_init();
     serial_putnbr(info->vbe_mode_info);
     heap_init();
-    graphic_init(info);
-    if (info->framebuffer_addr_low > 0xb800) {
-        draw_std_char('$', 0 , 10);
-        draw_std_char('$', 10 , 0);
-    }
+   //graphic_init(info);
+   //if (info->framebuffer_addr_low > 0xb800) {
+   //    draw_std_char('$', 0 , 10);
+   //    draw_std_char('$', 10 , 0);
+   //}
 
+    game_main();
+    while(1);
 
     olivine_main(1, (char *[]){"olivine"});
 	while (1);
 }
+
+
