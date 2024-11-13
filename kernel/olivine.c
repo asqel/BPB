@@ -2488,6 +2488,16 @@ char *if_game(char **) {
     return NULL;
 }
 
+char *if_scancode(char **) {
+    while (1) {
+        while (port_read_u8(0x60) == 0x1c);
+
+   	    char c = port_read_u8(0x60);
+        printf("0x%d\n", c);
+    }
+
+}
+
 internal_function_t internal_functions[] = {
     {".", if_dot},
     {"cd", if_cd},
@@ -2513,6 +2523,7 @@ internal_function_t internal_functions[] = {
     {"clear", if_clear},
     {"alloc", if_alloc},
     {"game", if_game},
+    {"scancode", if_scancode},
     {NULL, NULL}
 };
 
@@ -4689,7 +4700,7 @@ int unix_local_input(char *buffer, int size, char *prompt) {
 int bpb_local_input(char *buffer, int size, char **history, int history_end) {
     python_style_input(buffer, size, history, history_end);
     return -1;
-}   
+}
 
 /*********************
  *                  *
@@ -4767,7 +4778,7 @@ void start_shell(void) {
             puts("Exiting olivine shell, bye!");
             break;
         }
-        
+
         #if PROFANBUILD || BPBBUILD
         // add to history if not empty and not the same as the last command
         if (line[0] && (history[history_index] == NULL || strcmp(line, history[history_index]))) {

@@ -43,8 +43,14 @@ void kernel_main(grub_info *info) {
 
     serial_init();
     rtc_init();
-
     timer_init();
+
+    float c = 0;
+    for (int i =0; i < 1000; i++) {
+        c += c*c - c + i/c;
+    }
+    serial_putnbr((int)c);
+
 
     serial_putnbr(info->vbe_mode_info);
     heap_init();
