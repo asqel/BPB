@@ -126,6 +126,8 @@ void game_main() {
             continue;
         old = c;
 
+		if (c == 1)
+			return ;
 		if (c == 0x11) {
 			player.y_in_chunk -= 1;
 			player.dir = 0;
