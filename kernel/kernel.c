@@ -12,7 +12,6 @@ void close_os() {
 
 int olivine_main(int argc, char **argv);
 int puts(const char *s);
-void heap_init(void);
 
 
 
@@ -36,7 +35,7 @@ void draw_std_char(char c, int x, int y);
 void game_main();
 
 void kernel_main(grub_info *info) {
-
+    heap_init((u8 *)0x100000, 0x10000);
     screen_clear();
     puts("it's a good idea to want to make an os that runs Windows exe and graphic driverslike to be able to run games (._.  )");
     puts("indeed it is\n");
@@ -45,15 +44,7 @@ void kernel_main(grub_info *info) {
     rtc_init();
     timer_init();
 
-    float c = 0;
-    for (int i =0; i < 1000; i++) {
-        c += c*c - c + i/c;
-    }
-    serial_putnbr((int)c);
-
-
     serial_putnbr(info->vbe_mode_info);
-    heap_init();
    //graphic_init(info);
    //if (info->framebuffer_addr_low > 0xb800) {
    //    draw_std_char('$', 0 , 10);

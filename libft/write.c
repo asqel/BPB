@@ -1,34 +1,38 @@
 #include <kernel.h>
 
 size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
-	(void)stream;
     char *string = (char *)ptr;
-    for (size_t i = 0; string[i] != 0 && i < size * nmemb; i++) {
-        screen_add_char(string[i], 0x0f);
+	int count = 0;
+    for (size_t i = 0; i < size * nmemb; i++) {
+		fputc(string[i], stream);
+		if ((i + 1) % size == 0)
+			count++;
     }
-    return size;
+    return count;
 }
 
 int fputc(int c, FILE *stream) {
-	(void)stream;
-	screen_add_char(c, 0x0f);
+	if (stream == stdout)
+		screen_add_char(c, 0x0f);
+	if (stream == serialout)
+		serial_putc(c);
     return c;
 }
 
 int fputs(const char *s, FILE *stream) {
-    (void)stream;
-    for (size_t i = 0; s[i] != 0; i++) {
-        screen_add_char(s[i], 0x0f);
-    }
-    return 0;
+	int len = 0;
+
+	while (s[len] != '\0')
+		len++;
+    return fwrite(s, 1, len, stream);
 }
 
 int puts(const char *s) {
-    for (size_t i = 0; s[i] != 0; i++) {
-        screen_add_char(s[i], 0x0f);
-    }
-    screen_add_char('\n', 0x0f);
-    return 0;
+    	int len = 0;
+
+	while (s[len] != '\0')
+		len++;
+    return fwrite(s, 1, len, stdout);
 }
 
 

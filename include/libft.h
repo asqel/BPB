@@ -21,8 +21,6 @@ int fputs(const char *s, FILE *stream);
 int fputc(int c, FILE *stream);
 int puts(const char *s);
 
-#define stderr ((FILE *)1)
-#define stdout ((FILE *)1)
-#define stdin ((FILE *)1)
+
 
 #endif

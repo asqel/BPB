@@ -18,6 +18,9 @@ typedef u32 oe_arch_uint;
 
 typedef unsigned int uint;
 
+#define HEAP_SIZE 0x10000
+
+
 // genre c'est standard
 typedef struct tm {
     int    tm_sec;   // seconds [0,61]
@@ -34,6 +37,11 @@ typedef struct tm {
 typedef struct {
 	int fd;
 } FILE;
+
+#define stdout ((FILE *)1)
+#define serialout ((FILE *)2)
+#define stderr stdout
+#define stdin stdout
 
 #define SERIAL_PORT 0x3f8
 
