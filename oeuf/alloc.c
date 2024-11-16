@@ -1,12 +1,10 @@
 #include "oeuf.h"
 #include <libft.h>
 
-#define HEAP_SIZE 0x10000
-
 size_t alloc_count = 0;
 
-u8 *heap_info = (u8 *)0x100000 + HEAP_SIZE; //1 == ocupied ; 2 == start of block (2bit each)
-u8 *heap = (u8 *)0x100000;
+u8 *heap_info = 0; //1 == ocupied ; 2 == start of block (2bit each)
+u8 *heap = 0;
 
 #define is_occupied_or_start(x) (heap_info[(size_t)((x) - heap) / 4] & ((u8)0b11 << (2 * ((size_t)((x) - heap) % 4))))
 #define is_occupied(x) (heap_info[(size_t)((x) - heap) / 4] & ((u8)0b01 << (2 * ((size_t)((x) - heap) % 4))))
@@ -15,7 +13,9 @@ u8 *heap = (u8 *)0x100000;
 #define set_occupied(x) (heap_info[(size_t)((x) - heap) / 4] |= ((u8)0b01 << (2 * ((size_t)((x) - heap) % 4))))
 #define clear_info(x) (heap_info[(size_t)((x) - heap) / 4] &= ~((u8)0b11 << (2 * ((size_t)((x) - heap) % 4))))
 
-void heap_init() {
+void heap_init(u8 *heap_start, u32 heap_size) {
+	heap = heap_start;
+	heap_info = heap_start + heap_size;
 	for (int i = 0; i < HEAP_SIZE / 4; i++)
 		heap_info[i] = 0;
 }

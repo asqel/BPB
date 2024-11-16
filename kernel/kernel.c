@@ -12,7 +12,6 @@ void close_os() {
 
 int olivine_main(int argc, char **argv);
 int puts(const char *s);
-void heap_init(void);
 
 
 
@@ -38,7 +37,7 @@ void game_main();
 
 void kernel_main(grub_info *info) {
 
-    heap_init();
+    heap_init((u8 *)0x100000, 0x10000);
     if (info->framebuffer_addr_low > 0xb800)
         graphic_init(info);
 
@@ -49,14 +48,6 @@ void kernel_main(grub_info *info) {
     serial_init();
     rtc_init();
     timer_init();
-
-
-
-    //graphic_init(info);
-    //if (info->framebuffer_addr_low > 0xb800) {
-    //    draw_std_char('$', 0 , 10);
-    //    draw_std_char('$', 10 , 0);
-    //}
 
     olivine_main(1, (char *[]){"olivine"});
 	while (1);
