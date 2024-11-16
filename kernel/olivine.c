@@ -2483,8 +2483,16 @@ char *if_alloc(char **input) {
     return res;
 }
 
-char *if_game(char **) {
-    game_main();
+char *if_game(char **argv) {
+    extern void game_main();
+    extern void chess_main();
+
+    if (argv[0] == NULL)
+        return NULL;
+    if (!strcmp(argv[0], "game"))
+        game_main();
+    else if (!strcmp(argv[0], "chess"))
+        chess_main();
     return NULL;
 }
 

@@ -35,7 +35,12 @@ void draw_std_char(char c, int x, int y);
 
 void game_main();
 
+
 void kernel_main(grub_info *info) {
+
+    heap_init();
+    if (info->framebuffer_addr_low > 0xb800)
+        graphic_init(info);
 
     screen_clear();
     puts("it's a good idea to want to make an os that runs Windows exe and graphic driverslike to be able to run games (._.  )");
@@ -45,20 +50,13 @@ void kernel_main(grub_info *info) {
     rtc_init();
     timer_init();
 
-    float c = 0;
-    for (int i =0; i < 1000; i++) {
-        c += c*c - c + i/c;
-    }
-    serial_putnbr((int)c);
 
 
-    serial_putnbr(info->vbe_mode_info);
-    heap_init();
-   //graphic_init(info);
-   //if (info->framebuffer_addr_low > 0xb800) {
-   //    draw_std_char('$', 0 , 10);
-   //    draw_std_char('$', 10 , 0);
-   //}
+    //graphic_init(info);
+    //if (info->framebuffer_addr_low > 0xb800) {
+    //    draw_std_char('$', 0 , 10);
+    //    draw_std_char('$', 10 , 0);
+    //}
 
     olivine_main(1, (char *[]){"olivine"});
 	while (1);
