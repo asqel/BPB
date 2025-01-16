@@ -20,10 +20,19 @@ void heap_init(u8 *heap_start, u32 heap_size) {
 		heap_info[i] = 0;
 }
 
+u8 *heap_init_with_disk(u8 *heap_start, u32 heap_size, u8 *disk, u32 disk_size) {
+	heap = heap_start;
+	memcpy(heap, disk, disk_size);
+	heap_info = heap_start + heap_size;
+	for (int i = 0; i < HEAP_SIZE / 4; i++)
+		heap_info[i] = 0;
+	return malloc(disk_size);
+}
+
 void *malloc(size_t size) {
 	if (size == 0)
 		return NULL;
-	
+
 	for (size_t i = 0; i < HEAP_SIZE - size + 1; i++) {
 		u8 is_here = 1;
 		for (size_t k = 0; k < size; k++) {
@@ -35,7 +44,7 @@ void *malloc(size_t size) {
 		if (is_here) {
 			set_start(&heap[i]);
 			for (size_t k = 1; k < size; k++) {
-				set_start(&heap[i + k]);
+				set_occupied(&heap[i + k]);
 			}
 			alloc_count++;
 			return &heap[i];
@@ -71,30 +80,66 @@ size_t get_alloc_size(void *ptr) {
 	while (is_occupied(ptr2 + len))
 		len++;
 	return len;
-	
+
 }
 
 inline static size_t min(size_t a, size_t b) {
 	if (a < b)
 		return a;
 	return b;
-} 
-
-void *realloc(void *ptr, size_t size) {
-    if (size == 0) {
-        free(ptr);
-        return NULL;
-    }
-    if (ptr == NULL)
-        return malloc(size);
-    u8 *ptr2 = malloc(size);
-    if (!ptr2)
-        return NULL;
-    memcpy(ptr2, ptr, min(size, get_alloc_size(ptr)));
-    free(ptr);
-    return ptr2;
 }
+void *realloc(void *ptr, size_t size) {
+	// int alloc_len = get_alloc_size(ptr);
+	// if (alloc_len == -1) {
+		// return NULL;
+	// }
+	// if (size == 0) {
+		// free(ptr);
+		// return NULL;
+	// }
+	// if (alloc_len == size)
+		// return ptr;
+	// if (size < alloc_len) {
+		// for (int i = size; i < alloc_len; i++) {
+			// clear_info((u8 *)ptr + i);
+		// }
+		// return ptr;
+	// }
+	// // check if is there room just after
+	// u8 is_there_room = 1;
+	// for (int i = alloc_len; i < size; i++) {
+		// if (is_occupied_or_start((u8 *)ptr + i)) {
+			// is_there_room = 0;
+			// break;
+		// }
+	// }
+	// if (is_there_room) {
+		// for (int i = alloc_len; i < size; i++) {
+			// set_occupied((u8 *)ptr + i);
+		// }
+		// return ptr;
+	// }
+	// void *new_ptr = malloc(size);
+	// if (!new_ptr) {
+		// free(ptr);
+		// return NULL;
+	// }
+	// memcpy(new_ptr, ptr, alloc_len);
+	// free(ptr);
+	// return new_ptr;
 
+	if (size == 0) {
+		free(ptr);
+		return NULL;
+	}
+
+	void *new_ptr = malloc(size);
+	if (!new_ptr)
+		return NULL;
+	memcpy(new_ptr, ptr, min(get_alloc_size(ptr), size));
+	free(ptr);
+	return new_ptr;
+}
 void *calloc(size_t nmemb, size_t size) {
     void *ptr = malloc(nmemb * size);
     if (!ptr)

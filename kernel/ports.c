@@ -18,3 +18,13 @@ u16 port_read_u16(u16 port) {
 void port_write_u16(u16 port, u16 val) {
     asm volatile("out %%ax, %%dx" : : "a" (val), "d" (port));
 }
+
+void port_write_u32(u16 port, u32 val) {
+    asm volatile("out %%eax, %%dx" : : "a" (val), "d" (port));
+}
+
+u32 port_read_u32(u16 port) {
+    u32 result;
+    asm("in %%dx, %%eax" : "=a" (result) : "d" (port));
+    return result;
+}

@@ -18,7 +18,7 @@ typedef u32 oe_arch_uint;
 
 typedef unsigned int uint;
 
-#define HEAP_SIZE 0x10000
+#define HEAP_SIZE 0x100000
 
 
 // genre c'est standard
@@ -131,5 +131,12 @@ typedef struct {
     u8 framebuffer_type;
     u8 color_info[6];
 } grub_info;
+
+typedef struct {
+    u32 mod_start;      // Adresse de début du module
+    u32 mod_end;        // Adresse de fin du module
+    u32 string;         // Description du module (optionnel)
+    u32 reserved;
+} grub_module_t;
 
 #endif

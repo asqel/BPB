@@ -41,16 +41,19 @@ kernel.bin: build/entry_local.o $(KERNEL_OBJS)
 kernel.elf: build/entry_grub.o $(KERNEL_OBJS)
 	$(LD) -o $@ -T build/kernel_grub.ld $^
 
-BPB.iso: kernel.elf
+BPB.iso: kernel.elf disk
 	mkdir -p isodir/boot/grub
 	cp kernel.elf isodir/boot/kernel.elf
+	cp disk.bin isodir/boot/disk.bin
 	cp build/grub.cfg isodir/boot/grub/grub.cfg
 	grub-mkrescue -o BPB.iso isodir
 	rm -rf isodir
 
-disk.bin:
-	make -C disk
+disk:
+	python3 disk.py
 
 clean:
 	find . -name '*.o' -delete
 	rm -f *.bin *.iso *.elf
+
+.PHONY: run run_term run_grub clean disk

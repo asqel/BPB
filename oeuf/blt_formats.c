@@ -69,7 +69,7 @@ static int put_format_s(FILE *fd, va_list *args, oe_format_arg) {
 
 static int puthex(u32 n, FILE *fd) {
     if (n < 16) {
-        fwrite("0123456789ABCDEF"[n], 1, 1, fd);
+        fwrite(&("0123456789ABCDEF"[n]), 1, 1, fd);
         return (1);
     }
     return puthex(n / 16, fd) + puthex(n % 16, fd);
@@ -80,6 +80,22 @@ static int put_format_x(FILE *fd, va_list *args, oe_format_arg) {
     return puthex(nbr, fd);
 }
 
+static int put_format_c(FILE *fd, va_list *args, oe_format_arg) {
+    char c = va_arg(*args, int);
+    return fputc(c, fd);
+}
+
+static int put_ptr(FILE *fd, u32 ptr) {
+    if (ptr < 0x10)
+        return fwrite(&("0123456789abcdef"[ptr]), 1, 1, fd);
+    return put_ptr(fd, ptr / 0x10) + put_ptr(fd, ptr % 0x10);
+}
+
+static int put_format_p(FILE *fd, va_list *args, oe_format_arg) {
+    return fwrite("0x", 1, 2, fd) + put_ptr(fd, (u32)va_arg(*args, void *));
+}
+
+
 oe_format_t blt_formats[] = {
     (oe_format_t){.func = &put_format_d, .specifier = "d"},
     (oe_format_t){.func = &put_format_n, .specifier = "n"},
@@ -87,6 +103,8 @@ oe_format_t blt_formats[] = {
     (oe_format_t){.func = &put_format_N, .specifier = "M"},
     (oe_format_t){.func = &put_format_s, .specifier = "s"},
     (oe_format_t){.func = &put_format_x, .specifier = "x"},
+    (oe_format_t){.func = &put_format_c, .specifier = "c"},
+    (oe_format_t){.func = &put_format_p, .specifier = "p"},
 };
 
 int blt_formats_len = sizeof(blt_formats)/sizeof(blt_formats[0]);

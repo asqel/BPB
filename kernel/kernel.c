@@ -1,5 +1,7 @@
 #include <kernel.h>
+#include <libft.h>
 #include <oeuf.h>
+#include <fal.h>
 
 void close_os() {
     port_write_u16(0x604, 0x2000);   // qemu
@@ -35,19 +37,115 @@ void draw_std_char(char c, int x, int y);
 void game_main();
 
 
+void hexdump(u8 *data, u32 len) {
+    for (u32 i = 0; i < len; i++) {
+        u8 hex_line[16] = {0};
+        for (u32 k = i; k < i + 16 && k < len; k++) {
+            hex_line[k - i] = data[k];
+        }
+        for (u32 k = 0; k < 16; k++)
+            fprintf(serialout, "%x%x ", hex_line[k] >> 4, hex_line[k] &0x0f);
+        fprintf(serialout, "    ");
+        for (u32 k = 0; k < 16; k++) {
+            if (hex_line[k] >= ' ' && hex_line[k] <= '~')
+                fprintf(serialout, "%c", hex_line[k]);
+            else
+                fprintf(serialout, ".");
+        }
+        fprintf(serialout, "\n");
+        i += 16;
+    }
+}
+
+u8 *move_disk_to_heap(u8 *disk, u32 size) {
+    extern u8 *heap;
+
+    memmove(heap, disk, size);
+    return malloc(size);
+}
+
+u32 find_entry_point(const unsigned char *data, u32 size) {
+    // Vérification des préconditions
+    if (data == NULL || size < 0x40) { // 0x40 est une taille minimale pour un en-tête ELF complet
+        fprintf(stderr, "Invalid ELF data or size too small.\n");
+        return 0;
+    }
+
+    // Vérification de la signature ELF
+    if (data[0] != 0x7F || data[1] != 'E' || data[2] != 'L' || data[3] != 'F') {
+        fprintf(stderr, "Not a valid ELF file.\n");
+        return 0;
+    }
+
+    // Déterminer le type d'architecture
+    u8 ei_class = data[4]; // e_ident[EI_CLASS]
+    if (ei_class == 1) {
+        // ELF 32 bits
+        if (size < 0x34) { // En-tête ELF 32 bits
+            fprintf(stderr, "ELF file too small for 32-bit header.\n");
+            return 0;
+        }
+        // Récupérer l'entry point (offset 0x18 dans l'en-tête ELF 32 bits)
+        u32 entry_point = *(u32 *)(data + 0x18);
+        return (u32)entry_point;
+    } else if (ei_class == 2) {
+        // ELF 64 bits
+        fprintf(stderr, "ELF 64-bit detected. Returning 0.\n");
+        return 0;
+    } else {
+        fprintf(stderr, "Unknown ELF class (not 32-bit or 64-bit).\n");
+        return 0;
+    }
+}
+
+
 void kernel_main(grub_info *info) {
 
-    heap_init((u8 *)0x100000, 0x10000);
+    u8 *disk = NULL;
+    u32 disk_size = 0;
+    if (info->mods_count > 0) {
+        grub_module_t *disk_mod = &(((grub_module_t *)info->mods_addr)[0]);
+        u8* disk_data = (u8 *)disk_mod->mod_start;
+        disk_size = disk_mod->mod_end - disk_mod->mod_start;
+        disk = heap_init_with_disk((u8 *)0x100000, 0x10000, disk_data, disk_size);
+        fal_init(disk, disk_size);
+        fal_print_tree(&fal_root, 2, serialout);
+
+        for (u32 i = 0; i < fal_root.value.dir.element_count; i++) {
+            if (!strcmp("test.elf", fal_root.value.dir.elements[i].name)) {
+                fprintf(serialout, "found test.elf %x %d\n", fal_root.value.dir.elements[i].value.file.data, fal_root.value.dir.elements[i].value.file.size);
+                u32 entry_point = find_entry_point(fal_root.value.dir.elements[i].value.file.data, fal_root.value.dir.elements[i].value.file.size);
+                int (*main_func)() = (int (*)(void))fal_root.value.dir.elements[i].value.file.data + entry_point;
+                fprintf(serialout, "entry point %x\n", entry_point);
+                fprintf(serialout, "\nreturn value %x\n", main_func());
+                fprintf(serialout, "adfter call\n");
+            }
+        }
+    }
+    else
+        heap_init((u8 *)0x100000, 0x10000);
     if (info->framebuffer_addr_low > 0xb800)
         graphic_init(info);
 
     screen_clear();
     puts("it's a good idea to want to make an os that runs Windows exe and graphic driverslike to be able to run games (._.  )");
     puts("indeed it is\n");
+    if (disk == NULL) {
+        printf("\n\n\nABORT NO DISK FOUND\npress any key to exit\n");
+        while (port_read_u8(0x60) == 0x1c);
+        while (1) {
+            if (port_read_u8(0x60))
+                break;
+        }
+        return ;
+    }
 
     serial_init();
     rtc_init();
     timer_init();
+    //pci_init();
+    //pci_print();
+
 
     olivine_main(1, (char *[]){"olivine"});
 	while (1);
