@@ -1,0 +1,7 @@
+if [ ! -f "_start_file.o" ]; then
+	echo "Error: _start_file.o not found"
+	echo "Please compile it first with ./gcc"
+	exit 1
+fi
+
+exec ld -m a.out-i386 --startfile=_start_file.o "$@"

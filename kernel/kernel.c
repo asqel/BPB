@@ -100,6 +100,7 @@ u32 find_entry_point(const unsigned char *data, u32 size) {
 
 
 void kernel_main(grub_info *info) {
+    serial_init();
 
     u8 *disk = NULL;
     u32 disk_size = 0;
@@ -120,6 +121,8 @@ void kernel_main(grub_info *info) {
                 fprintf(serialout, "\nreturn value %x\n", main_func());
                 fprintf(serialout, "adfter call\n");
             }
+
+            // !TODO: fixe fal_get_file/ getelemnt / getdir
         }
     }
     else
@@ -134,13 +137,13 @@ void kernel_main(grub_info *info) {
         printf("\n\n\nABORT NO DISK FOUND\npress any key to exit\n");
         while (port_read_u8(0x60) == 0x1c);
         while (1) {
-            if (port_read_u8(0x60))
+            if (port_read_u8(0x60) < 0x81)
                 break;
         }
+        close_os();
         return ;
     }
 
-    serial_init();
     rtc_init();
     timer_init();
     //pci_init();
