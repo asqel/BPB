@@ -1,1 +1,0 @@
-exec gcc -B. -ffreestanding -nostdlib -m32 "$@"
