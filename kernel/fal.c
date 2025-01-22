@@ -24,7 +24,6 @@ void fal_add_file(fal_dir_t *dir, char *name, u8 *data, u32 size) {
 	element.type = FAL_T_FILE;
 	element.name = strdup(name);
 	element.value.file.data = malloc(size);
-	fprintf(serialout, "le ptr %x\n", element.value.file.data);
 	memcpy(element.value.file.data, data, size);
 	element.value.file.size = size;
 	element.value.file.data_alloc_len = size;
@@ -82,7 +81,6 @@ void add_element_from_disk(fal_dir_t *dir, u8 *disk, u32 disk_size) {
 				u8 *new_content = malloc(content_len);
 				memcpy(new_content, content, content_len);
 				fal_add_file(dir, name, new_content, content_len);
-				fprintf(serialout, "added file %s %d\n", name, content_len);
 				break;
 			case FAL_T_DIR:
 				fal_add_dir(dir, name);
@@ -106,6 +104,35 @@ void fal_init(u8 *disk, u32 disk_size) {
 	add_element_from_disk(&fal_root.value.dir, disk, disk_size);
 }
 
+// if len is -1 use strcmp else use strncmp
+fal_element_t *fal_get_element_from(fal_dir_t *dir, char *name, int len) {
+	if (len == -1)
+		len = strlen(name);
+	for (u32 i = 0; i < dir->element_count; i++) {
+		if (strlen(dir->elements[i].name) != len)
+			continue;
+		if (!strncmp(dir->elements[i].name, name, len))
+			return &(dir->elements[i]);
+	}
+	return NULL;
+}
+
+static char *fal_path_link_relative(char *abs_path, int i, char *link, char *lname) {
+	u32 len1 = i;
+	u32 len2 = strlen(&(abs_path[i + strlen(lname)]));
+	char *res = malloc(sizeof(char) * (len1 + 1 + strlen(link) + 1 + len2 + 1));
+	if (res == NULL)
+		return NULL;
+	res[0] = '\0';
+	strncat(res, abs_path, len1);
+	strcat(res, "/");
+	strcat(res, link);
+	strcat(res, "/");
+	strcat(res, &(abs_path[i + strlen(lname)]));
+	return res;
+
+}
+
 
 //takes only absolute path (may contain ./ ../ or link)
 fal_element_t *fal_get_element(char *abs_path) {
@@ -114,72 +141,51 @@ fal_element_t *fal_get_element(char *abs_path) {
 	if (abs_path[0] != '/')
 		return NULL;
 	fal_element_t *current = &fal_root;
-	current->parent = &current->value.dir;
+	current->parent = &fal_root;
+	u32 i = 1;
+	while (abs_path[i] != '\0') {
 
-	int i = 0;
-	while (abs_path[i] == '\0') {
-		fprintf(serialout, "le i est %d\n", i);
 		if (abs_path[i] == '/') {
 			i++;
 			continue;
 		}
 		if (current->type != FAL_T_DIR && current->type != FAL_T_LINK)
 			return NULL;
-		if (current->type == FAL_T_DIR) {
-			int name_len = 0;
-			for (int k = i; abs_path[k] != '\0' && abs_path[k] != '/'; k++)
-				name_len++;
-			if (!strncmp(&abs_path[i], "..", 2)) {
-				i += 2;
-				current = current->parent;
-				continue;
-			}
-			if (!strncmp(&abs_path[i], ".", 1)) {
-				i += 1;
-				continue;
-			}
-			int found = 0;
-			for (int k = 0; k < current->value.dir.element_count; k++) {
-				if (!strncmp(current->value.dir.elements[k].name, &abs_path[i], name_len)) {
-					i += k;
-					current->value.dir.elements[k].parent = current;
-					current = &current->value.dir.elements[k];
-					found  = 1;
-					break;
-				}
-			}
-			if (!found)
-				return NULL;
+		u32 end = i;
+		while (abs_path[end] != '/' && abs_path[end] != '\0')
+			end++;
+		u32 len = end - i;
+		if (len == 1 && abs_path[i] == '.') {
+			i = end;
 			continue;
 		}
-		if (current->type == FAL_T_LINK) {
-			if (current->value.link.type == FAL_LINK_T_ABS) {
-				char *new_path = malloc(strlen(current->name) + strlen(&abs_path[i]) + 2);
-				new_path[0] = '\0';
-				strcat(new_path, current->value.link.link);
-				strcat(new_path, "/");
-				strcat(new_path, &abs_path[i]);
-				fal_element_t *element = fal_get_element(new_path);
+		if (len == 2 && abs_path[i] == '.' && abs_path[i + 1] == '.') {
+			i = end;
+			current = current->parent;
+			continue;
+		}
+		fal_element_t *element = fal_get_element_from(&current->value.dir, &abs_path[i], len);
+		if (element == NULL)
+			return NULL;
+		if (element->type == FAL_T_LINK) {
+			if (element->value.link.type == FAL_LINK_T_ABS) {
+				char *new_path = oe_str_cat_new3(element->value.link.link, "/", &abs_path[end]);
+				fal_element_t *res = fal_get_element(new_path);
 				free(new_path);
-				return element;
+				return res;
 			}
-			if (current->value.link.type == FAL_LINK_T_RELATIVE) {
-				int link_parent_end = i - 1;
-				while ( link_parent_end >= 0 && abs_path[link_parent_end] != '/')
-					link_parent_end--;
-				char *new_path = malloc(link_parent_end + 1 + strlen(current->value.link.link) + 1);
-				new_path[0] = '\0';
-				for (int k = 0; k < link_parent_end; k++)
-					new_path[k] = abs_path[k];
-				new_path[link_parent_end] = '\0';
-				strcat(new_path, "/");
-				strcat(new_path, current->value.link.link);
-				fal_element_t *element = fal_get_element(new_path);
-				free(new_path);
-				return element;
+			else {
+				char *new_path = fal_path_link_relative(abs_path, i, element->value.link.link, element->name);
+				if (new_path == NULL)
+					return NULL;
+				fal_element_t *res = fal_get_element(new_path);
+				free(res);
+				return res;
 			}
 		}
-		return NULL;
+		element->parent = current;
+		current = element;
+		i = end;
 	}
 	return current;
 }
@@ -206,7 +212,7 @@ void fal_print_tree(fal_element_t *dir, int indent, FILE *file) {
 	if (strncmp(dir->name, "/", 1))
 		fprintf(file, "/");
 	fprintf(file, "\n");
-	for (int i = 0; i < dir->value.dir.element_count; i++) {
+	for (u32 i = 0; i < dir->value.dir.element_count; i++) {
 		if (dir->value.dir.elements[i].type == FAL_T_DIR) {
 			fal_print_tree(&dir->value.dir.elements[i], indent + 2, file);
 		}
@@ -227,4 +233,11 @@ void fal_print_tree(fal_element_t *dir, int indent, FILE *file) {
 		}
 	}
 
+}
+
+void fal_fprint_element(FILE *fd, fal_element_t *element) {
+	if (element == NULL)
+		fprintf(fd, "FAL{NULL}");
+	else
+		fprintf(fd, "FAL{type: %d, name: %s}\n", element->type, element->name);
 }

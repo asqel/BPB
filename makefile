@@ -11,7 +11,7 @@ CFLAGS = -ffreestanding -Wall -Wextra -fno-exceptions -m32 -fno-stack-protector 
 # '--oformat binary' deletes all symbols as a collateral, so we don't need
 # to 'strip' them manually on this case
 run: BPB.iso
-	qemu-system-i386 -drive format=raw,file=BPB.iso -serial stdio
+	qemu-system-i386 -drive format=raw,file=BPB.iso -serial stdio -d cpu_reset
 
 %.o: %.c
 	$(CC) -c $< -o $@ $(CFLAGS)

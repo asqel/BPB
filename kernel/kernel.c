@@ -98,9 +98,15 @@ u32 find_entry_point(const unsigned char *data, u32 size) {
     }
 }
 
+#define HEAP_ADDR 0x100000
+#define HEAP_SIZE 0x100000
+
+void init_idt();
+
 
 void kernel_main(grub_info *info) {
     serial_init();
+
 
     u8 *disk = NULL;
     u32 disk_size = 0;
@@ -108,27 +114,16 @@ void kernel_main(grub_info *info) {
         grub_module_t *disk_mod = &(((grub_module_t *)info->mods_addr)[0]);
         u8* disk_data = (u8 *)disk_mod->mod_start;
         disk_size = disk_mod->mod_end - disk_mod->mod_start;
-        disk = heap_init_with_disk((u8 *)0x100000, 0x10000, disk_data, disk_size);
+        disk = heap_init_with_disk((u8 *)HEAP_ADDR, HEAP_SIZE, disk_data, disk_size);
         fal_init(disk, disk_size);
         fal_print_tree(&fal_root, 2, serialout);
-
-        for (u32 i = 0; i < fal_root.value.dir.element_count; i++) {
-            if (!strcmp("test.elf", fal_root.value.dir.elements[i].name)) {
-                fprintf(serialout, "found test.elf %x %d\n", fal_root.value.dir.elements[i].value.file.data, fal_root.value.dir.elements[i].value.file.size);
-                u32 entry_point = find_entry_point(fal_root.value.dir.elements[i].value.file.data, fal_root.value.dir.elements[i].value.file.size);
-                int (*main_func)() = (int (*)(void))fal_root.value.dir.elements[i].value.file.data + entry_point;
-                fprintf(serialout, "entry point %x\n", entry_point);
-                fprintf(serialout, "\nreturn value %x\n", main_func());
-                fprintf(serialout, "adfter call\n");
-            }
-
-            // !TODO: fixe fal_get_file/ getelemnt / getdir
-        }
     }
     else
-        heap_init((u8 *)0x100000, 0x10000);
+        heap_init((u8 *)HEAP_ADDR, HEAP_SIZE);
     if (info->framebuffer_addr_low > 0xb800)
         graphic_init(info);
+
+    //init_idt();
 
     screen_clear();
     puts("it's a good idea to want to make an os that runs Windows exe and graphic driverslike to be able to run games (._.  )");
@@ -143,7 +138,6 @@ void kernel_main(grub_info *info) {
         close_os();
         return ;
     }
-
     rtc_init();
     timer_init();
     //pci_init();

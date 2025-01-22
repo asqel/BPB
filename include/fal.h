@@ -50,7 +50,7 @@ struct fal_element_t {
 		struct fal_special_file_t special_file;
 		struct fal_link_t link;
 	} value;
-	struct fal_dir_t *parent; // not guarenteed to be correct (only used by get_element)
+	struct fal_element_t *parent; // not guarenteed to be correct (only used by get_element)
 };
 
 
@@ -66,5 +66,7 @@ fal_dir_t *fal_get_dir(char *abs_path);
 fal_file_t *fal_get_file(char *abs_path);
 void fal_print_tree(fal_element_t *dir, int indent, FILE *file);
 void fal_init(u8 *disk, u32 disk_size);
+void fal_fprint_element(FILE *fd, fal_element_t *element);
+fal_element_t *fal_get_element(char *abs_path);
 
 #endif

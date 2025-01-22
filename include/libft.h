@@ -11,6 +11,7 @@ char *strncpy(char *dest, const char *src, size_t n);
 size_t strlen(const char *s);
 void	*memmove(void *dest, const void *src, size_t n);
 char	*strcat(char *dest, char *src);
+char	*strncat(char *dest, const char *src, size_t n);
 int	atoi(char *str);
 
 size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream);
