@@ -60,7 +60,7 @@ void init_gdt() {
         "mov %%ax, %%fs\n"
         "mov %%ax, %%gs\n"
         "mov %%ax, %%ss\n"
-        "jmp $0x08, $.1\n"    // Saut far pour changer le segment de code (sélecteur 0x08)
+        "ljmp $0x08, $.1\n"    // Saut far pour changer le segment de code (sélecteur 0x08)
         ".1:\n"
         : : "r" (&gdt_ptr)
     );

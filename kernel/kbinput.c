@@ -26,7 +26,6 @@ int python_style_input(char *buffer, int max, char **history, int history_size) 
             continue;
         old = c;
         if (is_entering) {
-            fprintf(serialout, "%d\n", (uint)le_char);
             if (c == 56 && c > 128)
                 continue;
             if (is_entering && c == 56)

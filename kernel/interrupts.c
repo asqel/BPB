@@ -1,4 +1,5 @@
 #include <kernel.h>
+#include <oeuf.h>
 
 typedef struct {
 	u32 ds;
@@ -19,18 +20,14 @@ typedef struct {
 	u32 ss;
 } register_t;
 
-void isr_handler_c() {
-	asm volatile("sti");
-
-}
 void irq_handler_c(register_t *r) {
-	fprintf(serialout, "interrupt: %d\n", r->int_no);
 	if (r->int_no >= 40)
         port_write_u8(0xA0, 0x20);
     port_write_u8(0x20, 0x20);
 }
 
-void irs_handler_c(register_t *r) {
-	fprintf(serialout, "interrupt: %d\n", r->int_no);
-	while (1);
+void isr_handler_c(register_t *r) {
+	if ((i32)r->int_no < 0)
+		r->int_no += 256;
+	fprintf(stderr, "ISR %d\n", r->int_no);
 }

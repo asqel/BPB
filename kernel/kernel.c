@@ -124,8 +124,8 @@ void kernel_main(grub_info *info) {
     if (info->framebuffer_addr_low > 0xb800)
         graphic_init(info);
 
-    //init_gdt();
-    //init_idt();
+    init_gdt();
+    init_idt();
 
     screen_clear();
     puts("it's a good idea to want to make an os that runs Windows exe and graphic driverslike to be able to run games (._.  )");
