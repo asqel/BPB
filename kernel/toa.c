@@ -4,6 +4,7 @@
 toa (The One Above)
 
 elf32 program launcher
+(only shared object containing _start)
 
 */
 
@@ -37,7 +38,8 @@ static u32 magic_len = 4;
 
 enum TOA_ERRORS{
 	TOA_ERR_NONE,
-	TOA_ERR_NOT_ELF
+	TOA_ERR_NOT_ELF,
+	TOA_ERR_UNSUPPORTED
 };
 
 // returns 0 if no error else an error code

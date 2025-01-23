@@ -1,7 +1,10 @@
 ENTRY(_start)
 
 SECTIONS {
+    kernel_start = .;
+
     . = 0x10000;
+
 
     .multiboot : {
         *(.multiboot)
@@ -24,5 +27,5 @@ SECTIONS {
         *(.data)
     }
 
-
+    kernel_end = .;
 }

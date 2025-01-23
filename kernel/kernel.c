@@ -103,10 +103,11 @@ u32 find_entry_point(const unsigned char *data, u32 size) {
 
 void init_idt();
 
+extern void *kernel_start;
+extern void *kernel_end;
 
 void kernel_main(grub_info *info) {
     serial_init();
-
 
     u8 *disk = NULL;
     u32 disk_size = 0;
@@ -123,11 +124,13 @@ void kernel_main(grub_info *info) {
     if (info->framebuffer_addr_low > 0xb800)
         graphic_init(info);
 
+    //init_gdt();
     //init_idt();
 
     screen_clear();
     puts("it's a good idea to want to make an os that runs Windows exe and graphic driverslike to be able to run games (._.  )");
     puts("indeed it is\n");
+    fprintf(stdout, "kernel size: %d\n", &kernel_end - &kernel_start);
     if (disk == NULL) {
         printf("\n\n\nABORT NO DISK FOUND\npress any key to exit\n");
         while (port_read_u8(0x60) == 0x1c);
@@ -142,7 +145,6 @@ void kernel_main(grub_info *info) {
     timer_init();
     //pci_init();
     //pci_print();
-
 
     olivine_main(1, (char *[]){"olivine"});
 	while (1);

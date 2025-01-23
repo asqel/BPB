@@ -1,4 +1,4 @@
-KERNEL_SRC = $(wildcard kernel/*.c libft/*.c oeuf/*.c)
+KERNEL_SRC = $(wildcard kernel/*.c libft/*.c oeuf/*.c kernel/*.asm)
 KERNEL_OBJS = ${KERNEL_SRC:.c=.o}
 KERNEL_OBJS := ${KERNEL_OBJS:.asm=.o}
 
@@ -8,13 +8,18 @@ LD = ld -m elf_i386
 
 CFLAGS = -ffreestanding -Wall -Wextra -fno-exceptions -m32 -fno-stack-protector -fno-pie -I./include -nostdlib -nostdinc
 
+all: run
+
 # '--oformat binary' deletes all symbols as a collateral, so we don't need
 # to 'strip' them manually on this case
 run: BPB.iso
-	qemu-system-i386 -drive format=raw,file=BPB.iso -serial stdio -d cpu_reset
+	qemu-system-i386 -drive format=raw,file=BPB.iso -serial stdio #-d cpu_reset
 
 %.o: %.c
 	$(CC) -c $< -o $@ $(CFLAGS)
+
+%.o: %.asm
+	nasm -f elf32 $< -o $@
 
 %.o: %.asm
 	nasm -f elf32 $< -o $@
@@ -47,4 +52,6 @@ clean:
 	find . -name '*.o' -delete
 	rm -f *.bin *.iso *.elf
 
-.PHONY: run run_term clean disk
+re: clean all
+
+.PHONY: run run_term clean disk re
