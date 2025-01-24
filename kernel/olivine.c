@@ -1281,6 +1281,27 @@ char *if_eval(char **input) {
     return res;
 }
 
+char *if_int(char **input) {
+    extern call_int(int num);
+    int argc = 0;
+    while (input[argc] != NULL)
+        argc++;
+    if (argc != 1) {
+        raise_error("int", "Requires exactly one argument");
+        return ERROR_CODE;
+    }
+    int num = 0;
+    if (local_atoi(input[0], &num)) {
+        raise_error("int", "Argument must be an integer");
+        return ERROR_CODE;
+    }
+    if (call_int(num) == -1) {
+        raise_error("int", "Error while calling int only numbers between 0 and 255 are allowed");
+        return ERROR_CODE;
+    }
+    return NULL;
+}
+
 /***************************************
  *                                    *
  *  Olivine Search Internal Function  *
@@ -2576,6 +2597,7 @@ internal_function_t internal_functions[] = {
     {"alloc", if_alloc},
     {"game", if_game},
     {"scancode", if_scancode},
+    {"int", if_int},
     {NULL, NULL}
 };
 
