@@ -1,6 +1,7 @@
-KERNEL_SRC = $(wildcard kernel/*.c libft/*.c oeuf/*.c kernel/*.asm)
+KERNEL_SRC = $(shell find kernel libft oeuf kernel -type f -name '*.c' -o -name '*.asm')
+KERNEL_SRC += build/entry_grub.asm
 KERNEL_OBJS = ${KERNEL_SRC:.c=.o}
-KERNEL_OBJS := ${KERNEL_OBJS:.asm=.o}
+KERNEL_OBJS := ${KERNEL_OBJS:.asm=.o_s}
 
 # Change this if your cross-compiler is somewhere else
 CC = gcc -m32
@@ -18,10 +19,7 @@ run: BPB.iso
 %.o: %.c
 	$(CC) -c $< -o $@ $(CFLAGS)
 
-%.o: %.asm
-	nasm -f elf32 $< -o $@
-
-%.o: %.asm
+%.o_s: %.asm
 	nasm -f elf32 $< -o $@
 
 
@@ -31,7 +29,7 @@ run_term: BPB.bin
 kernel.bin: build/entry_local.o $(KERNEL_OBJS)
 	$(LD) -o $@ -T build/kernel_local.ld $^ --oformat binary
 
-kernel.elf: build/entry_grub.o $(KERNEL_OBJS)
+kernel.elf: $(KERNEL_OBJS)
 	$(LD) -o $@ -T build/kernel_grub.ld $^
 
 BPB.iso: kernel.elf disk

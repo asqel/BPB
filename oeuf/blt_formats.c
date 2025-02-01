@@ -47,7 +47,7 @@ static int put_format_d(FILE *fd, va_list *args, oe_format_arg fm_arg) {
             res++;
         }
     }
-	return putnbr_i32(value, fd) + res;
+    return putnbr_i32(value, fd) + res;
 }
 
 static int put_format_n(FILE *, va_list *args, oe_format_arg fm_arg) {

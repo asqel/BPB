@@ -129,22 +129,22 @@ ISR_NO_ERR 30
 ISR_NO_ERR 31
 
 ;IRQS
-IRQ 0
-IRQ 1
-IRQ 2
-IRQ 3
-IRQ 4
-IRQ 5
-IRQ 6
-IRQ 7
-IRQ 8
+IRQ 0; timer
+IRQ 1; keyboard
+IRQ 2; cascade
+IRQ 3; COM2
+IRQ 4; COM1
+IRQ 5; LPT2
+IRQ 6; floppy disk
+IRQ 7; LPT1
+IRQ 8; RTC CMOS
 IRQ 9
 IRQ 10
 IRQ 11
-IRQ 12
-IRQ 13
-IRQ 14
-IRQ 15
+IRQ 12; PS/2 mouse
+IRQ 13; FPU
+IRQ 14; primary ata
+IRQ 15; secondary ata
 
 
 ; 48-255: user defined

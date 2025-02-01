@@ -53,15 +53,15 @@ void init_gdt() {
 
     // Charger la GDT en ASM
     asm volatile (
-        "lgdt (%0)\n"         // Charger la GDT
+        "gdt (%0)\n"         // Charger la GDT
         "mov $0x10, %%ax\n"   // Charger le segment de données (sélecteur 0x10)
         "mov %%ax, %%ds\n"
         "mov %%ax, %%es\n"
         "mov %%ax, %%fs\n"
         "mov %%ax, %%gs\n"
         "mov %%ax, %%ss\n"
-        "ljmp $0x08, $.1\n"    // Saut far pour changer le segment de code (sélecteur 0x08)
-        ".1:\n"
+        "ljmp $0x08, $.next\n"    // Saut far pour changer le segment de code (sélecteur 0x08)
+        ".next:\n"
         : : "r" (&gdt_ptr)
     );
 }

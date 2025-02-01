@@ -36,7 +36,7 @@ typedef struct {
 static u8 magic_number[4] = {0x7F, 'E', 'L', 'F'};
 static u32 magic_len = 4;
 
-enum TOA_ERRORS{
+enum TOA_ERRORS {
 	TOA_ERR_NONE,
 	TOA_ERR_NOT_ELF,
 	TOA_ERR_UNSUPPORTED
@@ -44,6 +44,8 @@ enum TOA_ERRORS{
 
 // returns 0 if no error else an error code
 int toa_launch(u8 *prog, u32 len, int *main_return) {
+	if (len < magic_len)
+		return TOA_ERR_NOT_ELF;
 	for (u32 i = 0; i < magic_len; i++) {
 		if (prog[i] != magic_number[i])
 			return TOA_ERR_NOT_ELF;
