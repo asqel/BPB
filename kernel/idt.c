@@ -284,12 +284,6 @@ void init_idt_entry(int num, void *base) {
     idt[num].flags = 0x8e;
 }
 
-static void memset(void *dst, int c, size_t len) {
-	for (size_t i = 0; i < len; i++) {
-		((u8 *)dst)[i] = c;
-	}
-}
-
 #define PIC1 0x20       // Adresse du PIC maître (Command)
 #define PIC2 0xA0       // Adresse du PIC esclave (Command)
 #define PIC1_DATA 0x21  // Données du PIC maître

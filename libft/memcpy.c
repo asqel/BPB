@@ -36,3 +36,9 @@ void	*memmove(void *dest, const void *src, size_t n)
 	}
 	return (dest);
 }
+
+void memset(void *dst, int c, size_t len) {
+	for (size_t i = 0; i < len; i++) {
+		((u8 *)dst)[i] = c;
+	}
+}

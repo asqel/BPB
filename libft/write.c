@@ -32,7 +32,9 @@ int puts(const char *s) {
 
 	while (s[len] != '\0')
 		len++;
-    return fwrite(s, 1, len, stdout);
+    if (fwrite(s, 1, len, stdout) == len)
+        return fputc('\n', stdout);
+    return -1;
 }
 
 

@@ -53,7 +53,7 @@ void init_gdt() {
 
     // Charger la GDT en ASM
     asm volatile (
-        "gdt (%0)\n"         // Charger la GDT
+        "lgdt (%0)\n"         // Charger la GDT
         "mov $0x10, %%ax\n"   // Charger le segment de données (sélecteur 0x10)
         "mov %%ax, %%ds\n"
         "mov %%ax, %%es\n"
