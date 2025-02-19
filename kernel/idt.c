@@ -602,4 +602,5 @@ void init_idt() {
     idt_ptr.limit = sizeof(idt) - 1;
     idt_ptr.base = (u32) &idt;
     asm volatile("lidt %0" : : "m" (idt_ptr));
+	asm volatile("sti");
 }

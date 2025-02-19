@@ -26,9 +26,6 @@ run: BPB.iso
 run_term: BPB.bin
 	qemu-system-i386 -drive format=raw,file=BPB.bin -nographic -curses
 
-kernel.bin: build/entry_local.o $(KERNEL_OBJS)
-	$(LD) -o $@ -T build/kernel_local.ld $^ --oformat binary
-
 kernel.elf: $(KERNEL_OBJS)
 	$(LD) -o $@ -T build/kernel_grub.ld $^
 
@@ -47,9 +44,11 @@ disk:
 	python3 disk.py
 
 clean:
-	find . -name '*.o' -delete
-	rm -f *.bin *.iso *.elf
+	rm -rf $(KERNEL_OBJS)
 
-re: clean all
+fclean: clean
+	rm -f kernel.elf BPB.iso
+
+re: fclean all
 
 .PHONY: run run_term clean disk re

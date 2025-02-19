@@ -5260,3 +5260,10 @@ int olivine_main(int argc, char **argv) {
 
     return ret_val;
 }
+
+
+void olivine_process() {
+    olivine_main(1, (char *[]){"olivine", NULL});
+    fprintf(stderr, "!!!!! olivine has exited\n");
+    while (1);
+}

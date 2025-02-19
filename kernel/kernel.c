@@ -12,7 +12,7 @@ void close_os() {
     asm volatile("hlt");
 }
 
-int olivine_main(int argc, char **argv);
+void olivine_process();
 int puts(const char *s);
 
 
@@ -20,7 +20,6 @@ int puts(const char *s);
 #define grub_flag(info, N) (((info).flags >> N) & 0b1)
 
 int check_graphics_mode(grub_info *info) {
-    // Si le bit 12 (flags[12]) est activé, cela signifie qu'un framebuffer graphique est utilisé
     if (info->flags & (1 << 12)) {
         return 1; // Mode graphique
     } else {
@@ -148,17 +147,8 @@ void kernel_main(grub_info *info) {
 
     extern int new_process(void *entry_point);
     void kernel_process();
-    new_process((u8 *)kernel_process - 1);
-    asm volatile("sti");
+    new_process((u8 *)olivine_process);
 
 	while (1);
 }
-
-void kernel_process() {
-    asm volatile("sti");
-    fprintf(serialout, "kernel process\n");
-    olivine_main(1, (char *[]){"olivine", NULL});
-    while (1);
-}
-
 

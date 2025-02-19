@@ -26,16 +26,17 @@ typedef struct {
 	u8 exists;
 } process_t;
 
-int current_process = 0;
+int current_process = -1;
 process_t processes[10] = {0};
 int process_count = 0;
 
-#define PROCESS_STACK_SIZE      1500000 // 1.5MB
-#define PROCESS_STACK_START 500000000 // 500MB
+#define PROCESS_STACK_SIZE     1500000 // 1.5MB
+#define PROCESS_STACK_START  500000000 // 500MB
 #define PRELINKED_PROG_ADDR 1000000000 // 1GB
 
 
 int new_process(void *entry_point) {
+	asm volatile("cli");
 	if (process_count >= 10)
 		return -1;
 	int process_id = process_count;
@@ -49,13 +50,14 @@ int new_process(void *entry_point) {
 	processes[process_id].regs.eflags = 0x202; // IF=1 pour activer les interruptions
 	processes[process_id].exists = 1;
 	process_count++;
+	asm volatile("sti");
 	return process_id;
 }
 
 void dump_processes() {
 	fprintf(serialout, "Processes ccount: %d\n", process_count);
 	for (int i = 0; i < process_count; i++) {
-		fprintf(serialout, "Process %d: %d %x %x\n", i, processes[i].exists, processes[i].regs.eip);
+		fprintf(serialout, "Process %d: %d %x\n", i, processes[i].exists, processes[i].regs.eip);
 	}
 }
 
@@ -66,8 +68,14 @@ void irq_handler_c(register_t *r) {
     port_write_u8(0x20, 0x20);
 	if (r->int_no == 32) {
 		// timer
-		dump_processes();
-		if (process_count > 0) {
+		if (current_process == -1) {
+			if (process_count > 0) {
+				current_process = 0;
+				*r = processes[current_process].regs;
+			}
+		}
+		else if (process_count > 0) {
+			//dump_processes();
 			// save current
 			processes[current_process].regs = *r;
 
