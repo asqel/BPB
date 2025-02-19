@@ -146,11 +146,19 @@ void kernel_main(grub_info *info) {
     //pci_init();
     //pci_print();
 
-    u32 cr0 = 0;
-    asm volatile("mov %%cr0, %0" : "=r"(cr0));
-    fprintf(stdout, "cr0: %x\n", cr0);
-    olivine_main(1, (char *[]){"olivine", NULL});
+    extern int new_process(void *entry_point);
+    void kernel_process();
+    new_process((u8 *)kernel_process - 1);
+    asm volatile("sti");
+
 	while (1);
+}
+
+void kernel_process() {
+    asm volatile("sti");
+    fprintf(serialout, "kernel process\n");
+    olivine_main(1, (char *[]){"olivine", NULL});
+    while (1);
 }
 
 

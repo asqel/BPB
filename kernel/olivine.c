@@ -1513,7 +1513,7 @@ char *if_debug(char **input) {
         return NULL;
     }
 
-    // print functions 
+    // print functions
 
     for (int i = 0; i < g_olv->func_count && g_olv->funcs[i].name != NULL; i++) {
         printf("FUNC %s\n", g_olv->funcs[i].name);

@@ -1,0 +1,8 @@
+program compiled for specific addr
+
+simple multi thread
+
+
+MEMORY_layout:
+	STACKS: 500Mo each 1.5Mo
+	program prelinked: 1Go

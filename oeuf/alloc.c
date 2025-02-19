@@ -18,6 +18,7 @@ void heap_init(u8 *heap_start, u32 heap_size) {
 	heap_info = heap_start + heap_size;
 	for (int i = 0; i < HEAP_SIZE / 4; i++)
 		heap_info[i] = 0;
+
 }
 
 u8 *heap_init_with_disk(u8 *heap_start, u32 heap_size, u8 *disk, u32 disk_size) {
@@ -26,6 +27,7 @@ u8 *heap_init_with_disk(u8 *heap_start, u32 heap_size, u8 *disk, u32 disk_size) 
 	heap_info = heap_start + heap_size;
 	for (int i = 0; i < HEAP_SIZE / 4; i++)
 		heap_info[i] = 0;
+	fprintf(serialout, "heap: [%x; %x]\n", heap, heap + heap_size);
 	return malloc(disk_size);
 }
 
