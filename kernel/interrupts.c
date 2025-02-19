@@ -1,5 +1,6 @@
 #include <kernel.h>
 #include <oeuf.h>
+#include <libft.h>
 
 typedef struct {
 	u32 ds;
@@ -32,6 +33,7 @@ int process_count = 0;
 
 #define PROCESS_STACK_SIZE     1500000 // 1.5MB
 #define PROCESS_STACK_START  500000000 // 500MB
+#define PROCESS_USERSTACK    600000000 // 600MB
 #define PRELINKED_PROG_ADDR 1000000000 // 1GB
 
 
@@ -75,7 +77,7 @@ void irq_handler_c(register_t *r) {
 			}
 		}
 		else if (process_count > 0) {
-			//dump_processes();
+			dump_processes();
 			// save current
 			processes[current_process].regs = *r;
 
@@ -91,7 +93,29 @@ void irq_handler_c(register_t *r) {
 }
 
 void isr_handler_c(register_t *r) {
+	asm volatile("cli");
+	fprintf(serialout, "ds: %x\n", r->ds);
+	fprintf(serialout, "edi: %x\n", r->edi);
+	fprintf(serialout, "esi: %x\n", r->esi);
+	fprintf(serialout, "ebp: %x\n", r->ebp);
+	fprintf(serialout, "esp: %x\n", r->esp);
+	fprintf(serialout, "ebx: %x\n", r->ebx);
+	fprintf(serialout, "edx: %x\n", r->edx);
+	fprintf(serialout, "ecx: %x\n", r->ecx);
+	fprintf(serialout, "eax: %x\n", r->eax);
+	fprintf(serialout, "int_no: %x\n", r->int_no);
+	fprintf(serialout, "error_and_irq: %x\n", r->error_and_irq);
+	fprintf(serialout, "eip: %x\n", r->eip);
+	fprintf(serialout, "cs: %x\n", r->cs);
+	fprintf(serialout, "eflags: %x\n", r->eflags);
+	fprintf(serialout, "useresp: %x\n", r->useresp);
+	fprintf(serialout, "ss: %x\n", r->ss);
 	if ((i32)r->int_no < 0)
 		r->int_no += 256;
 	fprintf(stderr, "ISR %d\n", r->int_no);
+	if (r->int_no == 6) {
+		fprintf(serialout, "Invalid opcode opcode: %x; addr %x\n", *(u32 *)r->eip, r->eip);
+		close_os();
+	}
+	asm volatile("sti");
 }

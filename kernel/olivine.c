@@ -5262,7 +5262,15 @@ int olivine_main(int argc, char **argv) {
 }
 
 
+void test_process() {
+    while (1) {
+        puts("test process\n");
+        timer_sleep(1000);
+    }
+}
+
 void olivine_process() {
+    new_process(test_process);
     olivine_main(1, (char *[]){"olivine", NULL});
     fprintf(stderr, "!!!!! olivine has exited\n");
     while (1);

@@ -139,4 +139,6 @@ typedef struct {
     u32 reserved;
 } grub_module_t;
 
+int new_process(void *entry_point);
+
 #endif

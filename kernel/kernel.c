@@ -145,7 +145,6 @@ void kernel_main(grub_info *info) {
     //pci_init();
     //pci_print();
 
-    extern int new_process(void *entry_point);
     void kernel_process();
     new_process((u8 *)olivine_process);
 
