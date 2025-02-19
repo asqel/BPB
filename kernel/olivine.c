@@ -2530,7 +2530,7 @@ char *if_alloc(char **input) {
 }
 
 char *if_int(char **input) {
-    extern call_int(int num);
+    extern int call_int(int num);
     int argc = 0;
     while (input[argc] != NULL)
         argc++;
@@ -2565,7 +2565,7 @@ char *if_game(char **argv) {
 
 char *if_scancode(char **) {
     while (1) {
-        while (port_read_u8(0x60) == 0x1c);
+        while (port_read_u8(0x60) == 0x1c);;
 
    	    char c = port_read_u8(0x60);
         printf("0x%d\n", c);
@@ -5265,7 +5265,6 @@ int olivine_main(int argc, char **argv) {
 void test_process() {
     while (1) {
         puts("test process\n");
-        timer_sleep(1000);
     }
 }
 
