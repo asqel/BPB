@@ -2,7 +2,7 @@
 
 u32 factor;
 
-void timer_init(void) {
+void ltds_timer_init(void) {
     tm_t time;
     time_get(&time);
 
@@ -23,7 +23,7 @@ void timer_init(void) {
     }
 }
 
-u32 timer_sleep(u32 ms) {
+u32 ltds_timer_sleep(u32 ms) {
     tm_t time;
 
     u32 start = factor;

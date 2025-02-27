@@ -598,6 +598,8 @@ void init_idt() {
 	init_idt_entry(254, &_isr254);
 	init_idt_entry(255, &_isr255);
 
+	set_pit_freq(TIMER_FREQ);
+
     // Charger l'IDT dans le registre IDTR
     idt_ptr.limit = sizeof(idt) - 1;
     idt_ptr.base = (u32) &idt;

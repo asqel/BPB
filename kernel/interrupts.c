@@ -21,10 +21,14 @@ typedef struct {
 } register_t;
 
 
+u32 _timer_time_ms = 0;
+
 void irq_handler_c(register_t *r) {
 	if (r->int_no >= 40)
         port_write_u8(0xA0, 0x20);
     port_write_u8(0x20, 0x20);
+	if (r->int_no == 32)
+		_timer_time_ms += 1000 / TIMER_FREQ;
 }
 
 void isr_handler_c(register_t *r) {

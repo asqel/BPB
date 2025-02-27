@@ -142,13 +142,10 @@ void kernel_main(grub_info *info) {
         return ;
     }
     rtc_init();
-    timer_init();
-    //pci_init();
-    //pci_print();
+    ltds_timer_init();
+    pci_init();
+    pci_print();
 
-    u32 cr0 = 0;
-    asm volatile("mov %%cr0, %0" : "=r"(cr0));
-    fprintf(stdout, "cr0: %x\n", cr0);
     olivine_main(1, (char *[]){"olivine", NULL});
 	while (1);
 }

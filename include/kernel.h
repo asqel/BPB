@@ -51,8 +51,8 @@ void serial_putstr(char *s);
 void serial_putnbr(int n);
 void screen_clear();
 
-void timer_init(void);
-u32  timer_sleep(u32 ms);
+void ltds_timer_init(void);
+u32  ltds_timer_sleep(u32 ms);
 int  time_get(tm_t *target);
 
 u8   port_read_u8(u16 port);
@@ -62,6 +62,13 @@ void port_write_u16(u16 port, u16 val);
 
 void close_os();
 int python_style_input(char *buffer, int max, char **history, int history_size);
+
+#define TIMER_FREQ 1000
+
+void set_pit_freq(u32 freq);
+void sleep_ms(u32 ms);
+u32 timer_get_ms();
+
 
 typedef struct {
     u32 flags;

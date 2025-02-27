@@ -1513,7 +1513,7 @@ char *if_debug(char **input) {
         return NULL;
     }
 
-    // print functions 
+    // print functions
 
     for (int i = 0; i < g_olv->func_count && g_olv->funcs[i].name != NULL; i++) {
         printf("FUNC %s\n", g_olv->funcs[i].name);
@@ -2550,6 +2550,23 @@ char *if_int(char **input) {
     return NULL;
 }
 
+char *if_sleep(char **input) {
+    int argc = 0;
+    while (input[argc] != NULL)
+        argc++;
+    if (argc != 1) {
+        raise_error("sleep", "Requires exactly one argument");
+        return ERROR_CODE;
+    }
+    int num = 0;
+    if (local_atoi(input[0], &num)) {
+        raise_error("sleep", "Argument must be an integer");
+        return ERROR_CODE;
+    }
+    sleep_ms(num);
+    return NULL;
+}
+
 char *if_game(char **argv) {
     extern void game_main();
     extern void chess_main();
@@ -2600,6 +2617,7 @@ internal_function_t internal_funcs[] = {
     {"scancode", if_scancode},
     {"int", if_int},
     {"echo", if_echo},
+    {"sleep", if_sleep},
 
     {NULL, NULL}
 };
