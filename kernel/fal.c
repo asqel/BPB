@@ -10,69 +10,73 @@ file systeme for bpb (faloc (fat32 alloc lol))
 */
 fal_element_t fal_root = {0};
 
-void fal_add_element(fal_dir_t *dir, fal_element_t *element) {
-	dir->element_count++;
-	if (dir->element_count >= dir->element_alloc_len) {
-		dir->element_alloc_len = dir->element_alloc_len + 10;
-		dir->elements = realloc(dir->elements, dir->element_alloc_len * sizeof(fal_element_t));
+void fal_add_element(fal_element_t *parent, fal_element_t *element) {
+	parent->value.dir.element_count++;
+	if (parent->value.dir.element_count >= parent->value.dir.element_alloc_len) {
+		parent->value.dir.element_alloc_len = parent->value.dir.element_alloc_len + 10;
+		parent->value.dir.elements = realloc(parent->value.dir.elements, parent->value.dir.element_alloc_len * sizeof(fal_element_t));
 	}
-	dir->elements[dir->element_count - 1] = *element;
+	parent->value.dir.elements[parent->value.dir.element_count - 1] = *element;
+	parent->value.dir.elements[parent->value.dir.element_count - 1].parent = parent;
+
 }
 
-void fal_add_file(fal_dir_t *dir, char *name, u8 *data, u32 size) {
+void fal_add_file(fal_element_t *parent, char *name, u8 *data, u32 size) {
 	fal_element_t element = {0};
-	element.type = FAL_T_FILE;
 	element.name = strdup(name);
+	element.type = FAL_T_FILE;
 	element.value.file.data = malloc(size);
 	memcpy(element.value.file.data, data, size);
 	element.value.file.size = size;
 	element.value.file.data_alloc_len = size;
-	fal_add_element(dir, &element);
+	fal_add_element(parent, &element);
 }
 
-void fal_add_dir(fal_dir_t *dir, char *name) {
+void fal_add_dir(fal_element_t *parent, char *name) {
 	fal_element_t element = {0};
 	element.type = FAL_T_DIR;
 	element.name = strdup(name);
 	element.value.dir.element_count = 0;
 	element.value.dir.elements = NULL;
 	element.value.dir.element_alloc_len = 0;
-	element.value.dir.parent = dir;
-	fal_add_element(dir, &element);
+	fal_add_element(parent, &element);
 }
 
-fal_dir_t *fal_get_dir_from(fal_dir_t *dir, char *name) {
-	for (u32 i = 0; i < dir->element_count; i++) {
-		if (dir->elements[i].type == FAL_T_DIR && strcmp(dir->elements[i].name, name) == 0) {
-			return &dir->elements[i].value.dir;
+fal_element_t *fal_get_dir_from(fal_element_t *parent, char *name) {
+	if (parent->type != FAL_T_DIR)
+		return (NULL);
+	for (u32 i = 0; i < parent->value.dir.element_count; i++) {
+		fal_element_t *current = &parent->value.dir.elements[i];
+		if (current->type == FAL_T_DIR && !strcmp(current->name, name)) {
+			return &parent->value.dir.elements[i];
 		}
 	}
-	return NULL;
+	return (NULL);
 }
 
-void fal_add_link(fal_dir_t *dir, char *name, char *link) {
+void fal_add_link(fal_element_t *parent, char *name, char *link) {
 	fal_element_t element = {0};
 	element.type = FAL_T_LINK;
 	element.name = strdup(name);
 	element.value.link.link = strdup(link);
 	element.value.link.type = link[0] == '/' ? FAL_LINK_T_ABS : FAL_LINK_T_RELATIVE;
-	fal_add_element(dir, &element);
+	fal_add_element(parent, &element);
 }
 
-void add_element_from_disk(fal_dir_t *dir, u8 *disk, u32 disk_size) {
+void add_element_from_disk(fal_element_t *parent, u8 *disk, u32 disk_size) {
 	u32 i = 0;
 
 	while (i < disk_size) {
 		u8 type = disk[i];
 		if (type == FAL_T_LINK) {
-			char *name = &disk[i + 1];
+			char *name = (char *)&disk[i + 1];
 			u32 name_len = strlen(name);
-			char *link = &disk[i + 1 + name_len + 1];
-			fal_add_link(dir, name, link);
+			char *link = (char *)&disk[i + 1 + name_len + 1];
+			fal_add_link(parent, name, link);
 			i += 1 + name_len + 1 + strlen(link) + 1;
 			continue;
 		}
-		char *name = &disk[i + 1];
+		char *name = (char *)&disk[i + 1];
 		u32 name_len = strlen(name);
 		u32 content_len = *(u32 *)(&disk[i + 1 + name_len + 1]);
 		u8 *content = &disk[i + 1 + name_len + 1 + 4];
@@ -80,11 +84,11 @@ void add_element_from_disk(fal_dir_t *dir, u8 *disk, u32 disk_size) {
 			case FAL_T_FILE:
 				u8 *new_content = malloc(content_len);
 				memcpy(new_content, content, content_len);
-				fal_add_file(dir, name, new_content, content_len);
+				fal_add_file(parent, name, new_content, content_len);
 				break;
 			case FAL_T_DIR:
-				fal_add_dir(dir, name);
-				add_element_from_disk(fal_get_dir_from(dir, name), content, content_len);
+				fal_add_dir(parent, name);
+				add_element_from_disk(fal_get_dir_from(parent, name), content, content_len);
 				break;
 			case FAL_T_SPECIAL_FILE:
 				break;
@@ -100,19 +104,18 @@ void fal_init(u8 *disk, u32 disk_size) {
 	fal_root.value.dir.elements = NULL;
 	fal_root.value.dir.element_alloc_len = 0;
 	fal_root.value.dir.parent = &fal_root;
-
-	add_element_from_disk(&fal_root.value.dir, disk, disk_size);
+	add_element_from_disk(&fal_root, disk, disk_size);
 }
 
 // if len is -1 use strcmp else use strncmp
-fal_element_t *fal_get_element_from(fal_dir_t *dir, char *name, int len) {
+fal_element_t *fal_get_element_from(fal_element_t *parent, char *name, int len) {
 	if (len == -1)
 		len = strlen(name);
-	for (u32 i = 0; i < dir->element_count; i++) {
-		if (strlen(dir->elements[i].name) != len)
+	for (u32 i = 0; i < parent->value.dir.element_count; i++) {
+		if (strlen(parent->value.dir.elements[i].name) != (size_t)len)
 			continue;
-		if (!strncmp(dir->elements[i].name, name, len))
-			return &(dir->elements[i]);
+		if (!strncmp(parent->value.dir.elements[i].name, name, len))
+			return &(parent->value.dir.elements[i]);
 	}
 	return NULL;
 }
@@ -164,7 +167,7 @@ fal_element_t *fal_get_element(char *abs_path) {
 			current = current->parent;
 			continue;
 		}
-		fal_element_t *element = fal_get_element_from(&current->value.dir, &abs_path[i], len);
+		fal_element_t *element = fal_get_element_from(current, &abs_path[i], len);
 		if (element == NULL)
 			return NULL;
 		if (element->type == FAL_T_LINK) {
@@ -219,7 +222,7 @@ void fal_print_tree(fal_element_t *dir, int indent, FILE *file) {
 		if (dir->value.dir.elements[i].type == FAL_T_FILE) {
 			for (int j = 0; j < indent; j++)
 				fprintf(file, " ");
-			fprintf(file, "%s addr %p\n", dir->value.dir.elements[i].name, (u32)&(dir->value.dir.elements[i]));
+			fprintf(file, "%s\n", dir->value.dir.elements[i].name);
 		}
 		if (dir->value.dir.elements[i].type == FAL_T_LINK) {
 			for (int j = 0; j < indent; j++)

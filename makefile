@@ -7,7 +7,7 @@ KERNEL_OBJS := ${KERNEL_OBJS:.asm=.o_s}
 CC = gcc -m32
 LD = ld -m elf_i386
 
-CFLAGS = -ffreestanding -Wall -Wextra -fno-exceptions -m32 -fno-stack-protector -fno-pie -g -I./include -nostdlib -nostdinc
+CFLAGS = -ffreestanding -Wall -Wextra -Werror -fno-exceptions -m32 -fno-stack-protector -fno-pie -g -I./include -nostdlib -nostdinc
 
 all: run
 
@@ -48,6 +48,7 @@ disk:
 
 clean:
 	find . -name '*.o' -delete
+	find . -name '*.o_s' -delete
 	rm -f *.bin *.iso *.elf
 
 re: clean all

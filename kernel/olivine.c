@@ -2567,19 +2567,6 @@ char *if_sleep(char **input) {
     return NULL;
 }
 
-char *if_game(char **argv) {
-    extern void game_main();
-    extern void chess_main();
-
-    if (argv[0] == NULL)
-        return NULL;
-    if (!strcmp(argv[0], "game"))
-        game_main();
-    else if (!strcmp(argv[0], "chess"))
-        chess_main();
-    return NULL;
-}
-
 char *if_scancode(char **) {
     while (1) {
         while (port_read_u8(0x60) == 0x1c);
@@ -2613,7 +2600,6 @@ internal_function_t internal_funcs[] = {
 
     {"clear", if_clear},
     {"alloc", if_alloc},
-    {"game", if_game},
     {"scancode", if_scancode},
     {"int", if_int},
     {"echo", if_echo},

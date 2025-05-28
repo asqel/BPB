@@ -28,11 +28,6 @@ int check_graphics_mode(grub_info *info) {
     }
 }
 
-extern u32 font[256][30];
-
-void draw_glyph_at(u32 *glyphe, int size, int x, int y);
-void graphic_init(grub_info *);
-void draw_std_char(char c, int x, int y);
 
 void game_main();
 
@@ -64,40 +59,6 @@ u8 *move_disk_to_heap(u8 *disk, u32 size) {
     return malloc(size);
 }
 
-u32 find_entry_point(const unsigned char *data, u32 size) {
-    // Vérification des préconditions
-    if (data == NULL || size < 0x40) { // 0x40 est une taille minimale pour un en-tête ELF complet
-        fprintf(stderr, "Invalid ELF data or size too small.\n");
-        return 0;
-    }
-
-    // Vérification de la signature ELF
-    if (data[0] != 0x7F || data[1] != 'E' || data[2] != 'L' || data[3] != 'F') {
-        fprintf(stderr, "Not a valid ELF file.\n");
-        return 0;
-    }
-
-    // Déterminer le type d'architecture
-    u8 ei_class = data[4]; // e_ident[EI_CLASS]
-    if (ei_class == 1) {
-        // ELF 32 bits
-        if (size < 0x34) { // En-tête ELF 32 bits
-            fprintf(stderr, "ELF file too small for 32-bit header.\n");
-            return 0;
-        }
-        // Récupérer l'entry point (offset 0x18 dans l'en-tête ELF 32 bits)
-        u32 entry_point = *(u32 *)(data + 0x18);
-        return (u32)entry_point;
-    } else if (ei_class == 2) {
-        // ELF 64 bits
-        fprintf(stderr, "ELF 64-bit detected. Returning 0.\n");
-        return 0;
-    } else {
-        fprintf(stderr, "Unknown ELF class (not 32-bit or 64-bit).\n");
-        return 0;
-    }
-}
-
 #define HEAP_ADDR 0x100000
 #define HEAP_SIZE 0x100000
 
@@ -122,7 +83,7 @@ void kernel_main(grub_info *info) {
     else
         heap_init((u8 *)HEAP_ADDR, HEAP_SIZE);
     if (info->framebuffer_addr_low > 0xb800)
-        graphic_init(info);
+        //graphic_init(info); // !TODO
 
     init_gdt();
     init_idt();
@@ -130,7 +91,6 @@ void kernel_main(grub_info *info) {
     screen_clear();
     puts("it's a good idea to want to make an os that runs Windows exe and graphic driverslike to be able to run games (._.  )");
     puts("indeed it is\n");
-    fprintf(stdout, "kernel size: %d\n", &kernel_end - &kernel_start);
     if (disk == NULL) {
         printf("\n\n\nABORT NO DISK FOUND\npress any key to exit\n");
         while (port_read_u8(0x60) == 0x1c);
