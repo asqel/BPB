@@ -2,7 +2,7 @@
 CC = gcc
 LD = ld
 CFLAGS = -ffreestanding -Wall -Wextra -Werror -fno-exceptions -m64 -fno-stack-protector -fno-pie -g -I./include -nostdlib -nostdinc
-LDFLAGS = --oformat=binary -T linker.ld
+LDFLAGS = --oformat=binary -T linker.ld 
 
 KERNEL_SRC = $(wildcard src/*.c)
 KERNEL_OBJ = $(KERNEL_SRC:.c=.o)
@@ -22,11 +22,11 @@ $(KERNEL): $(KERNEL_OBJ)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm $(KERNEL_OBJ)
+	rm -f $(KERNEL_OBJ)
 
 fclean: clean
-	rm $(KERNEL)
-	rm $(TARGET)
+	rm -f $(KERNEL)
+	rm -f $(TARGET)
 
 re: fclean all
 

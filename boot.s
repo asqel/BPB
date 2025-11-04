@@ -1,4 +1,4 @@
-%define FREE_SPACE 0x9000
+%define FREE_SPACE 0xF000
 
 ORG 0x7C00
 BITS 16
@@ -70,7 +70,7 @@ Main:
 
 BITS 64
 .Long:
-    jmp 0x7c00 + 512 + 512
+    jmp 0x8000
 	jmp .Long
 
 
