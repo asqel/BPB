@@ -1,4 +1,4 @@
-%define FREE_SPACE 0xF000
+%define FREE_SPACE 0xf000
 
 ORG 0x7C00
 BITS 16
@@ -70,6 +70,7 @@ Main:
 
 BITS 64
 .Long:
+	push DISK_START
     jmp 0x8000
 	jmp .Long
 
@@ -159,3 +160,5 @@ Print:
 times 1024 - ($-$$) db 0
 kernel_entry:
 incbin "kernel.bin"
+align 512
+DISK_START:
