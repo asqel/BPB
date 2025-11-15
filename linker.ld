@@ -1,7 +1,7 @@
 ENTRY(_start)
 
 SECTIONS {
-    . = 0x8000;
+    . = 0x10000;
 
     .text ALIGN(4K) : {
 		src/start.o (.text)

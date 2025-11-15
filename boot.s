@@ -1,12 +1,7 @@
-%define FREE_SPACE 0xf000
-
 ORG 0x7C00
 BITS 16
 
-; Main entry point where BIOS leaves us.
-
-jmp load_disk               ; Some BIOS' may load us at 0x0000:0x7C00 while other may load us at 0x07C0:0x0000.
-; Do a far jump to fix this issue, and reload CS to 0x0000.
+jmp boot_main
 times 3-($-$$) db 0x90
 	OEMname: db "mkfs.fat"
 	bytesPerSector: dw 512
@@ -27,138 +22,70 @@ times 3-($-$$) db 0x90
 	dd 0x2d7e5a1a
 	db "NO NAME    "
 	db "FAT12   "
+	dl_save: dw 0
 
-load_disk:
-	mov ax, 0
+boot_main:
+	cli
+	mov [dl_save], dl
+	jmp 0:boot_main2 ; jmp because far jump is to big to be before part table
+boot_main2:
+	mov ax, 0x0000
+	mov ss, ax
+	mov sp, 0x7C00
+	in al, 0x92
+	or al, 2
+	out 0x92, al
+
+	mov ax, 0x1000
 	mov es, ax
 	mov ah, 2
-	mov al, 100
+	mov al, KERNEL_SIZE
 	mov ch, 0
 	mov cl, 2
 	mov dh, 0
-	mov bx, 0x7c00 + 512
+	mov bx, 0
 	int 0x13
 
-jmp 0x0000:Main
-; Pad out file.
-times 510 - ($-$$) db 0
-dw 0xAA55
+	lgdt [GDT_descriptor]
+	mov eax, cr0
+	or eax, 1    
+	mov cr0, eax
+	mov ax, 0x10   ; data segment = 3e entrée de GDT
+	jmp 0x8:prot
+prot:
+BITS 32
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+	mov ss, ax
+	mov esp, 0x9FC00 ; stack en RAM sûre
+	mov word [0x7c00 + 512], KERNEL_SIZE
+	mov al, [dl_save]
+	mov byte [0x7c00 + 512 + 2], al
+	call 0x8:0x10000
 
-Main:
-.FlushCS:   
-    xor ax, ax
+GDT_start:
+    dq 0x0000000000000000       ; Null descriptor
+    dq 0x00CF9A000000FFFF       ; Code segment 32-bit, base=0, limit=4GB
+    dq 0x00CF92000000FFFF       ; Data segment 32-bit, base=0, limit=4GB
 
-    ; Set up segment registers.
-    mov ss, ax
-    ; Set up stack so that it starts below Main.
-    mov sp, Main
-    
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    cld
+GDT_descriptor:
+    dw GDT_end - GDT_start - 1  ; limit (taille GDT - 1)
+    dd GDT_start                ; base
 
-    call CheckCPU                     ; Check whether we support Long Mode or not.
-    jc .NoLongMode
-
-    ; Point edi to a free space bracket.
-    mov edi, FREE_SPACE
-    ; Switch to Long Mode.
-    jmp SwitchToLongMode
-
-
-BITS 64
-.Long:
-	push DISK_START
-    jmp 0x8000
-	jmp .Long
+GDT_end:
 
 
-BITS 16
+times 510 - ($ - $$) db 0
+db 0x55, 0xaa
 
-.NoLongMode:
-    mov si, NoLongMode
-    call Print
-
-.Die:
-    hlt
-    jmp .Die
-
-
-%include "LongModeDirectly.asm"
-BITS 16
-
-
-NoLongMode db "ERROR: CPU does not support long mode.", 0x0A, 0x0D, 0
-
-
-; Checks whether CPU supports long mode or not.
-
-; Returns with carry set if CPU doesn't support long mode.
-
-CheckCPU:
-    ; Check whether CPUID is supported or not.
-    pushfd                            ; Get flags in EAX register.
-    
-    pop eax
-    mov ecx, eax  
-    xor eax, 0x200000 
-    push eax 
-    popfd
-
-    pushfd 
-    pop eax
-    xor eax, ecx
-    shr eax, 21 
-    and eax, 1                        ; Check whether bit 21 is set or not. If EAX now contains 0, CPUID isn't supported.
-    push ecx
-    popfd 
-
-    test eax, eax
-    jz .NoLongMode
-    
-    mov eax, 0x80000000   
-    cpuid                 
-    
-    cmp eax, 0x80000001               ; Check whether extended function 0x80000001 is available are not.
-    jb .NoLongMode                    ; If not, long mode not supported.
-
-    mov eax, 0x80000001  
-    cpuid                 
-    test edx, 1 << 29                 ; Test if the LM-bit, is set or not.
-    jz .NoLongMode                    ; If not Long mode not supported.
-
-    ret
-
-.NoLongMode:
-    stc
-    ret
-
-
-; Prints out a message using the BIOS.
-
-; es:si    Address of ASCIIZ string to print.
-
-
-
-
-Print:
-    pushad
-.PrintLoop:
-    lodsb                             ; Load the value at [@es:@si] in @al.
-    test al, al                       ; If AL is the terminator character, stop printing.
-    je .PrintDone                  	
-    mov ah, 0x0E	
-    int 0x10
-    jmp .PrintLoop                    ; Loop till the null character not found.
-	
-.PrintDone:
-    popad                             ; Pop all general purpose registers to save them.
-	ret
-
-times 1024 - ($-$$) db 0
+align 512, db 0
 kernel_entry:
 incbin "kernel.bin"
-align 512
+
+align 512, db 0
 DISK_START:
+times 512 db 0x42
+
+KERNEL_SIZE equ (DISK_START - kernel_entry) / 512

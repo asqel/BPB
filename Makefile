@@ -1,8 +1,8 @@
 
 CC = gcc
 LD = ld
-CFLAGS = -ffreestanding -Wall -Wextra -fno-exceptions -m64 -fno-stack-protector -fno-pie -g -I./include -nostdlib -nostdinc
-LDFLAGS = --oformat=binary -T linker.ld 
+CFLAGS = -ffreestanding -Wall -Wextra -fno-exceptions -m32 -fno-stack-protector -fno-pie -g -I./include -nostdlib -nostdinc
+LDFLAGS = --oformat=binary -T linker.ld -melf_i386 
 
 KERNEL_SRC = $(wildcard src/*.c)
 KERNEL_OBJ = $(KERNEL_SRC:.c=.o)

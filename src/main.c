@@ -1,4 +1,5 @@
 #include <ports.h>
+#include <disk.h>
 #include <serial.h>
 
 char *screen = (char *)0xb8000;
@@ -30,7 +31,9 @@ void putstr(char *str) {
 }
 
 void putnbr(uint32_t n) {
-	if (n < 16) {
+	if (n == 0)
+		putc('0');
+	else if (n < 16) {
 		if (n < 10)
 			putc(n + '0');
 		else
@@ -38,17 +41,19 @@ void putnbr(uint32_t n) {
 	}
 	else {
 		putnbr(n / 16);
-		putnbr(n % 10);
+		putnbr(n % 16);
 	}
 }
 
-void kernel_main(uint32_t disk_sector_start) {
+void kernel_main() {
 	serial_init();
+	init_disk();
 	uint16_t *screen2 = (uint16_t *)screen;
 	for (int i = 0; i < 80 * 25; i++) {
 		screen2[i] = 0;
 	}
-
-	putnbr(disk_sector_start);
+	putnbr(*(uint16_t *)(0x7c00 + 512));
+	putc(' ');
+	putnbr(512 + 512 *  *(uint16_t *)(0x7c00 + 512));
 	while(1);
 }
