@@ -4,8 +4,9 @@ LD = ld
 CFLAGS = -ffreestanding -Wall -Wextra -fno-exceptions -m32 -fno-stack-protector -fno-pie -g -I./include -nostdlib -nostdinc
 LDFLAGS = --oformat=binary -T linker.ld -melf_i386 
 
-KERNEL_SRC = $(wildcard src/*.c)
+KERNEL_SRC = $(wildcard src/*.c src/*.s)
 KERNEL_OBJ = $(KERNEL_SRC:.c=.o)
+KERNEL_OBJ := $(KERNEL_OBJ:.s=.o_s)
 KERNEL = kernel.bin
 
 TARGET = truc.iso
@@ -20,6 +21,9 @@ $(KERNEL): $(KERNEL_OBJ)
 
 %.o:%.c
 	$(CC) $(CFLAGS) -c $< -o $@
+
+%.o_s:%.s
+	nasm -f elf32 $< -o $@
 
 clean:
 	rm -f $(KERNEL_OBJ)

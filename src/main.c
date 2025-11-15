@@ -46,14 +46,24 @@ void putnbr(uint32_t n) {
 }
 
 void kernel_main() {
-	serial_init();
+	/*serial_init();
 	init_disk();
 	uint16_t *screen2 = (uint16_t *)screen;
 	for (int i = 0; i < 80 * 25; i++) {
 		screen2[i] = 0;
 	}
-	putnbr(*(uint16_t *)(0x7c00 + 512));
+	putnbr(*(uint8_t *)(0x7c00 + 512));
 	putc(' ');
-	putnbr(512 + 512 *  *(uint16_t *)(0x7c00 + 512));
+	putnbr(*(uint16_t *)(0x7c00 + 512 + 1));*/
+
+	uint8_t *screen = 0xb8000;
+	for (int i = 0; i < WIDTH * HEIGHT; i++) {
+		*screen = i;
+		screen++;
+		*screen = 0x0f;
+		screen++;
+	}
+
+
 	while(1);
 }
